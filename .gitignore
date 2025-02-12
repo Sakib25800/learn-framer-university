@@ -1,0 +1,43 @@
+# Node.js dependencies
+node_modules
+
+# Yarn
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# Build outputs
+.next/
+out/
+build
+
+# Rust target directory
+target/
+
+# Testing
+coverage
+
+# Misc
+.DS_Store
+*.pem
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+src/npm-debug.log*
+src/yarn-debug.log*
+src/yarn-error.log*
+src/.pnpm-debug.log*
+
+# Environment variables
+.env*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts

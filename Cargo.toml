@@ -1,0 +1,90 @@
+[package]
+name = "learn_framer_university"
+version = "0.0.0"
+edition = "2021"
+authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
+repository = "https://github.com/sakib25800/framer-university"
+description = "Backend of learn.framer.university"
+
+[workspace]
+members = ["crates/*"]
+
+[workspace.lints.rust]
+future_incompatible = "warn"
+nonstandard_style = "warn"
+rust_2018_idioms = "warn"
+rust_2018_compatibility = "warn"
+rust_2021_compatibility = "warn"
+unused = "warn"
+
+[workspace.lints.rustdoc]
+unescaped_backticks = "warn"
+
+[workspace.lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[package.metadata.cargo-machete]
+ignored = ["krata-tokio-tar"]
+
+[workspace.metadata.cargo-machete]
+ignored = ["krata-tokio-tar"]
+
+[lints]
+workspace = true
+
+[profile.release]
+opt-level = 2
+
+[dependencies]
+axum = {version = "0.8.1", features = ["macros"]}
+tower = "0.5.2"
+tower-http = { version = "0.6.2", features = ["add-extension", "fs", "catch-panic", "timeout", "compression-full"] }
+http = "1.2.0"
+http-body-util = "0.1.2"
+listenfd = "1.0.2"
+tower-cookies = "0.11.0"
+jsonwebtoken = "9.3.0"
+tokio = {version = "1.43.0", features = ["full"]}
+serde = {version = "1.0.217", features = ["derive"]}
+serde_json = "1.0.137"
+thiserror = "2.0.11"
+metrics = {version="0.24.1", default-features = false}
+metrics-exporter-prometheus = {version="0.16.1",default-features = false}
+tracing = "0.1.41"
+tracing-subscriber = {version="0.3.19", features = ["env-filter", "json"]}
+validator = {version = "0.20.0", features = ["derive"]}
+time = {version = "0.3.37", features = ["serde"]}
+once_cell = "1.20.2"
+config = "0.15.6"
+dotenvy = "0.15.7"
+anyhow = "1.0.95"
+prometheus = "0.13.4"
+utoipa = {version="5.3.1", features = ["chrono"]}
+utoipa-axum = "0.2.0"
+derive_more = {version="1.0.0",features = ["deref"]}
+sentry ={version= "0.36.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
+json-subscriber = "0.2.4"
+chrono = {version = "0.4.39", features = ["serde"]}
+deadpool-diesel = { version = "0.6.1", features = ["postgres", "tracing"] }
+diesel = { version = "2.2.7", features = ["postgres", "serde_json", "chrono", "numeric"] }
+diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "deadpool", "postgres"] }
+diesel_full_text_search = "2.2.0"
+diesel_migrations = { version = "=2.2.0", features = ["postgres"] }
+deadpool = "0.12.2"
+postgres-native-tls = "0.5.1"
+url = "2.5.4"
+diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
+paste = "1.0.15"
+uuid = { version = "1.12.1", features = ["v4"] }
+axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
+parking_lot = "0.12.3"
+serde_urlencoded = "0.7.1"
+env-var = "1"
+log = "0.4"
+hyper = { version = "1.6.0", features = ["client", "http1"] }
+axum-test = "17.2.0"
+
+[dev-dependencies]
+bytes = "1.9.0"
+framer_university_test_db = { path = "crates/framer_university_test_db" }
