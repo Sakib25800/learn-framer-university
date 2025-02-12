@@ -153,30 +153,90 @@ cargo test
 
 ### Running learn.framer.university with Docker
 
-There are Dockerfiles for both backend and frontend: `backend.Dockerfile` and `frontend.Dockerfile`.
+There are Dockerfiles to build both the backend and the frontend,
+(`backend.Dockerfile` and `frontend.Dockerfile`) respectively, but it is most
+useful to just use docker-compose to bring up everything that's needed all in
+one go:
 
-[Colima](https://github.com/abiosoft/colima) is recommended to run Docker containers without the overhead and complexity that sometimes comes with Docker Desktop.
-
-1. **Install Colima**: Install using Homebrew
-```console
-brew install colima
-```
-2. **Start Colima**
-```console
-colima start --memory 4
-```
-3. **Run Docker Compose**: Use Docker Compose as per usual
 ```console
 docker compose up -d
 ```
-4. **Stop Docker Compose**: To stop the running containers
+
+These environment variables can also be defined in a local `.env` file, see `.env.sample`
+for various configuration options.
+
+#### Colima
+
+Rather than use Docker Desktop, you can use Colima to run Docker on your Mac.
+
+Start Colima:
+
 ```console
-docker compose down
+colima start
 ```
-5. **Stop Colima**
+
+Stop Colima:
+
 ```console
 colima stop
 ```
+
+Restart Colima:
+
+```console
+colima restart
+```
+
+#### Accessing services
+
+By default, the services will be exposed on their normal ports:
+
+- `5432` for Postgres
+- `8080` for the learn.framer.university backend
+- `3000` for the learn.framer.university frontend
+
+These can be changed with the `docker-compose.override.yml` file.
+
+#### Changing code
+
+The `app/` directory is mounted directly into the frontend Docker container,
+which means that the Next.js live-reload server will still just work. If
+anything outside of `app/` is changed, the base Docker image will have to be
+rebuilt:
+
+```console
+# Rebuild frontend Docker image
+docker compose build frontend
+
+# Restart running frontend container (if it's already running)
+docker compose stop frontend
+docker compose rm frontend
+docker compose up -d
+```
+
+Similarly, the `src/` directory is mounted into the backend Docker container,
+so in order to recompile the backend, run:
+
+```console
+docker compose restart backend
+```
+
+If anything outside of `src/` is changed, the base Docker image will have to be
+rebuilt:
+
+```console
+# Rebuild backend Docker image
+docker compose build backend
+
+# Restart running backend container (if it's already running)
+docker compose stop backend
+docker compose rm backend
+docker compose up -d
+```
+
+#### Volumes
+
+A number of names volumes are created, as can be seen in the `volumes` section of the `docker-compose.yml` file.
 
 ## Pull Requests
 
