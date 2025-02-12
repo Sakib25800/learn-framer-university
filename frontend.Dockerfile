@@ -1,8 +1,3 @@
-# FROM node:latest
-# WORKDIR /app
-# COPY . .
-# CMD ["npm", "run", "dev"]
-
 ARG NODE_VERSION=18
 
 FROM node:${NODE_VERSION}-alpine
