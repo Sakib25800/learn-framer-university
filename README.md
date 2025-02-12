@@ -1,7 +1,7 @@
 <div align="center">
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="./docs/readme-logo-dark.png">
-  <img alt="crates.io logo" src="./docs/readme-logo-light.png" width="200">
+  <img alt="crates.io logo" src="./docs/readme-logo-light.png" width="150">
 </picture>
 </div>
 
