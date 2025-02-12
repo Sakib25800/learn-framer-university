@@ -9,6 +9,9 @@ description = "Backend of learn.framer.university"
 [workspace]
 members = ["crates/*"]
 
+[package.metadata.cargo-machete]
+ignored = ["log"]
+
 [workspace.lints.clippy]
 too_many_arguments = "allow"
 
@@ -52,6 +55,7 @@ axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
 parking_lot = "0.12.3"
 serde_urlencoded = "0.7.1"
 env-var = "1"
+log = "0.4"
 axum-test = "17.2.0"
 
 [dev-dependencies]

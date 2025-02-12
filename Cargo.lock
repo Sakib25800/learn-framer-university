@@ -872,6 +872,7 @@ dependencies = [
  "http",
  "json-subscriber",
  "jsonwebtoken",
+ "log",
  "metrics",
  "parking_lot",
  "prometheus",
