@@ -1,40 +1,66 @@
+x-backend: &backend
+    build:
+        context: .
+        dockerfile: backend.Dockerfile
+    environment:
+        IP: 0.0.0.0
+        PORT: 8080
+        DATABASE_URL: postgres://postgres:password@postgres/framer_university
+        ALLOWED_ORIGINS: http://localhost:3000
+        JWT_SECRET: "secret"
+        JWT_ACCESS_TOKEN_EXPIRATION_HOURS: 24
+        JWT_REFRESH_TOKEN_EXPIRATION_DAYS: 7
+        EMAIL_VERIFICATION_EXPIRATION_HOURS: 24
+        CONNECTION_TIMEOUT_SECONDS: 3
+        POOL_SIZE: 3
+        BACKEND_URL: http://backend:8080
+    links:
+        - postgres
+    volumes:
+        # Mount the src/ directory so we don't have to rebuild the Docker image
+        # when we want to change some code
+        - ./src:/app/src:ro
+
+        - index:/app/tmp
+        - cargo-cache:/usr/local/cargo/registry
+        - target-cache:/app/target
+        - local-uploads:/app/local_uploads
+
 services:
     postgres:
-        image: postgres:latest
+        image: postgres:17
         environment:
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: password
-            POSTGRES_DB: framer_university
         ports:
-            - "5432:5432"
+            - 127.0.0.1:5432:5432
         volumes:
-            - postgres-data:/var/lib/postgresql/data:delegated
+            - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+            - postgres-data:/var/lib/postgresql/data
 
     backend:
-        build:
-            context: .
-            dockerfile: backend.Dockerfile
+        <<: *backend
         ports:
-            - "8080:8080"
-        environment:
-            - DATABASE_URL=postgres://postgres:password@postgres:5432/framer_university
+            - 8080:8080
         depends_on:
             - postgres
-        volumes:
-            - ./src:/app/src:delegated
-            - target-cache:/app/target:delegated
 
     frontend:
         build:
             context: .
             dockerfile: frontend.Dockerfile
-        ports:
-            - "3000:3000"
-        volumes:
-            - ./app:/app/app:delegated
-        depends_on:
+        entrypoint: ["npm", "run", "dev"]
+        links:
             - backend
+        ports:
+            - 3000:3000
+        volumes:
+            # Mount the app/ directory so live reload works
+            - ./app:/app/app:ro
 
 volumes:
     postgres-data:
+    cargo-cache:
     target-cache:
+    index:
+    local-uploads:

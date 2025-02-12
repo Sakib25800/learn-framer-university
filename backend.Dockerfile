@@ -1,4 +1,15 @@
-FROM rust:latest
+ARG RUST_VERSION=1.84.1
+
+FROM rust:$RUST_VERSION
+
+ARG DIESEL_CLI_VERSION=2.2.7
+
+RUN apt-get update \
+    && apt-get install -y postgresql \
+    && rm -rf /var/lib/apt/lists/* \
+    && cargo install diesel_cli --version $DIESEL_CLI_VERSION --no-default-features --features postgres
+
 WORKDIR /app
-COPY . .
-CMD ["cargo", "run"]
+COPY . /app
+
+ENTRYPOINT ["/app/docker_entrypoint.sh"]

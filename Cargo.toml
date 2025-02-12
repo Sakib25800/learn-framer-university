@@ -1,5 +1,5 @@
 [package]
-name = "learn_framer_university"
+name = "framer_university"
 version = "0.0.0"
 edition = "2021"
 authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
@@ -39,7 +39,7 @@ opt-level = 2
 [dependencies]
 axum = {version = "0.8.1", features = ["macros"]}
 tower = "0.5.2"
-tower-http = { version = "0.6.2", features = ["add-extension", "fs", "catch-panic", "timeout", "compression-full"] }
+tower-http = { version = "0.6.2", features = ["add-extension", "fs", "catch-panic", "timeout", "compression-full", "cors"] }
 http = "1.2.0"
 http-body-util = "0.1.2"
 listenfd = "1.0.2"

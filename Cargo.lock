@@ -881,6 +881,61 @@ dependencies = [
 ]
 
 [[package]]
+name = "framer_university"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "axum-extra",
+ "axum-test",
+ "bytes",
+ "chrono",
+ "config",
+ "deadpool",
+ "deadpool-diesel",
+ "derive_more",
+ "diesel",
+ "diesel-async",
+ "diesel-derive-enum",
+ "diesel_full_text_search",
+ "diesel_migrations",
+ "dotenvy",
+ "env-var",
+ "framer_university_test_db",
+ "http",
+ "http-body-util",
+ "hyper",
+ "json-subscriber",
+ "jsonwebtoken",
+ "listenfd",
+ "log",
+ "metrics",
+ "metrics-exporter-prometheus",
+ "once_cell",
+ "parking_lot",
+ "paste",
+ "postgres-native-tls",
+ "prometheus",
+ "sentry",
+ "serde",
+ "serde_json",
+ "serde_urlencoded",
+ "thiserror 2.0.11",
+ "time",
+ "tokio",
+ "tower",
+ "tower-cookies",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "utoipa",
+ "utoipa-axum",
+ "uuid",
+ "validator",
+]
+
+[[package]]
 name = "framer_university_test_db"
 version = "0.0.0"
 dependencies = [
@@ -1456,61 +1511,6 @@ name = "lazy_static"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
-name = "learn_framer_university"
-version = "0.0.0"
-dependencies = [
- "anyhow",
- "axum",
- "axum-extra",
- "axum-test",
- "bytes",
- "chrono",
- "config",
- "deadpool",
- "deadpool-diesel",
- "derive_more",
- "diesel",
- "diesel-async",
- "diesel-derive-enum",
- "diesel_full_text_search",
- "diesel_migrations",
- "dotenvy",
- "env-var",
- "framer_university_test_db",
- "http",
- "http-body-util",
- "hyper",
- "json-subscriber",
- "jsonwebtoken",
- "listenfd",
- "log",
- "metrics",
- "metrics-exporter-prometheus",
- "once_cell",
- "parking_lot",
- "paste",
- "postgres-native-tls",
- "prometheus",
- "sentry",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "thiserror 2.0.11",
- "time",
- "tokio",
- "tower",
- "tower-cookies",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "url",
- "utoipa",
- "utoipa-axum",
- "uuid",
- "validator",
-]
 
 [[package]]
 name = "libc"
