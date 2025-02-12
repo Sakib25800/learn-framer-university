@@ -55,10 +55,6 @@ This module is responsible for managing database connections and migrations.
   - `connection_timeout_seconds`: The timeout duration for database connections in seconds.
   - `pool_size`: The size of the database connection pool.
 
-### `dist`
-
-TODO
-
 ### `model`
 
 This module contains the data models used in the application. These models represent the structure of the data stored in the database and are defined using Diesel ORM.

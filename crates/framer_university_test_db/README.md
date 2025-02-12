@@ -13,6 +13,3 @@ will use random suffixes.
 
 Note that the template database will be created with applied database migrations,
 so if you need an empty database, this is not the right tool for you.
-
-# Current stage
-- Currently setting up the test database infrastructure
