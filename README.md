@@ -1,15 +1,15 @@
 <div align="center">
-<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" fill="none">
-  <path d="M 35.959 11.986 L 47.945 0 L 47.945 23.973 L 35.959 35.959 Z" fill="hsl(0, 0%, 0%)"></path>
-  <path d="M 0 47.945 L 23.973 47.945 L 35.959 35.959 L 11.986 35.959 L 11.986 11.987 L 0 23.973 Z" fill="hsl(0, 0%, 0%)"></path>
-</svg>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./docs/readme-logo-dark.png">
+  <img alt="crates.io logo" src="./docs/readme-logo.png" width="200">
+</picture>
 </div>
 
 ---
 
 <div align="center">
 
-[Homepage][framer.university]
+[Homepage](https://framer.university)
 | [Status](https://status.learn.framer.university/)
 
 </div>
@@ -22,12 +22,12 @@ Learn everything there is to know about Framer.
 
 ### Working on the Frontend
 
-### Frontend requirements
+#### Frontend requirements
 
-To install node, run the following:
-```console
-brew install node
-```
+In order to run the backend, you will need to have installed:
+
+- [node](https://nodejs.org/en/) is the runtime environment
+- [npm](https://www.npmjs.com/) is the Node.js package manager
 
 #### Building and serving the frontend
 
@@ -107,7 +107,7 @@ without a restart needed, and you can leave the frontend running while you
 restart the server):
 
 ```console
-TODO
+npm run dev
 ```
 
 And then you should be able to visit <http://localhost:4200>!
@@ -160,9 +160,9 @@ There are Dockerfiles for both backend and frontend: `backend.Dockerfile` and `f
 ```console
 brew install colima
 ```
-2. **Start Colima**: Start Colima
+2. **Start Colima**
 ```console
-colima start
+colima start --memory 4
 ```
 3. **Run Docker Compose**: Use Docker Compose as per usual
 ```console
@@ -172,7 +172,7 @@ docker compose up -d
 ```console
 docker compose down
 ```
-5. **Stop Colima**: To stop Colima
+5. **Stop Colima**
 ```console
 colima stop
 ```

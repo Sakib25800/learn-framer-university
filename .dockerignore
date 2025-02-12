@@ -1,0 +1,18 @@
+# Version control
+.git
+.gitignore
+
+# Dependencies
+node_modules
+target
+
+# Environment files
+.env*
+
+# Development files
+*.log
+.DS_Store
+
+# Build outputs
+dist
+build
