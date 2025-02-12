@@ -24,25 +24,22 @@ pub struct Account {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, DbEnum, Serialize, Deserialize)]
+#[derive(Debug, DbEnum, Serialize, Deserialize, Default)]
 #[ExistingTypePath = "crate::schema::sql_types::AuthMethodEnum"]
 pub enum AuthMethod {
     #[db_rename = "oauth"]
     OAuth,
+    #[default]
     #[db_rename = "email"]
     Email,
     #[db_rename = "credentials"]
     Credentials,
+    #[allow(clippy::upper_case_acronyms)]
     #[db_rename = "oidc"]
     OIDC,
+    #[allow(clippy::upper_case_acronyms)]
     #[db_rename = "sms"]
     SMS,
-}
-
-impl Default for AuthMethod {
-    fn default() -> Self {
-        AuthMethod::Email
-    }
 }
 
 impl Account {

@@ -62,7 +62,7 @@ pub fn generate_tokens(
     jwt_refresh_token_expiration_days: i64,
     user: &User,
 ) -> AppResult<Tokens> {
-    let access_token = generate_access_token(jwt_secret, jwt_access_token_expiration_hours, &user)?;
+    let access_token = generate_access_token(jwt_secret, jwt_access_token_expiration_hours, user)?;
     let refresh_token = NewRefreshToken::new(user.id, jwt_refresh_token_expiration_days);
 
     Ok(Tokens {

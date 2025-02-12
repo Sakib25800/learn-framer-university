@@ -11,7 +11,7 @@ pub fn json_error(detail: &str, status: StatusCode) -> Response {
     (status, json).into_response()
 }
 
-/// The following structs wrap owned data and provide a custom message to the user
+// The following structs wrap owned data and provide a custom message to the user
 
 pub fn custom(status: StatusCode, detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
     Box::new(CustomApiError {

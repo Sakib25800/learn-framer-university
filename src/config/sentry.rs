@@ -16,13 +16,10 @@ impl SentryConfig {
             .into_dsn()
             .context("SENTRY_DSN_API is not a valid Sentry DSN value")?;
 
-        let environment = match dsn {
-            None => None,
-            Some(_) => Some(env_var!(required "SENTRY_ENV_API")),
-        };
+        let environment = dsn.as_ref().map(|_| env_var!(required "SENTRY_ENV_API"));
 
         Ok(Self {
-            dsn,
+            dsn: dsn.clone(),
             environment,
             release: Some(env_var!(optional "FLY_MACHINE_VERSION", default: "0")),
             traces_sample_rate: env_var!(optional "SENTRY_TRACES_SAMPLE_RATE", default: "0.0")

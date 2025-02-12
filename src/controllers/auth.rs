@@ -82,7 +82,7 @@ pub async fn verify(
     let token = &query.token;
     let mut conn = state.database.get().await?;
 
-    let verification_token = match VerificationToken::find_by_token(&token, &mut conn).await {
+    let verification_token = match VerificationToken::find_by_token(token, &mut conn).await {
         Ok(token) => token,
         Err(_) => return Err(auth("Invalid verification token")),
     };
@@ -107,7 +107,7 @@ pub async fn verify(
     User::verify_email(user.id, &mut conn).await?;
 
     // Delete the used verification token
-    VerificationToken::delete(&verification_token.identifier, &token, &mut conn).await?;
+    VerificationToken::delete(&verification_token.identifier, token, &mut conn).await?;
 
     Ok(Json(VerifiedEmailResponse {
         access_token: tokens.access_token,
