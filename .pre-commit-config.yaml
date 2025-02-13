@@ -10,7 +10,7 @@ repos:
         name: Lint Frontend
         entry: npm run lint
         language: node
-        files: \.(js|jsx|ts|tsx)$
+        files: ^(?!(next\.config\.ts$)).*\.(js|jsx|ts|tsx)$
 
       - id: prettier-frontend
         name: Prettier Frontend
