@@ -1,8 +1,8 @@
-import { defineConfig, devices } from "@playwright/test";
-import dotenv from "dotenv";
+import { defineConfig, devices } from "@playwright/test"
+import dotenv from "dotenv"
 
 // Load environment variables from .env file
-dotenv.config();
+dotenv.config()
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -13,13 +13,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI
-    ? [
-        ["html"],
-        ["junit", { outputFile: "playwright-results/junit.xml" }],
-        ["list"],
-      ]
-    : "html",
+  reporter: process.env.CI ? [["html"], ["junit", { outputFile: "playwright-results/junit.xml" }], ["list"]] : "html",
   use: {
     trace: "on-first-retry",
     baseURL: "http://localhost:3000",
@@ -42,4 +36,4 @@ export default defineConfig({
     timeout: 10000,
   },
   outputDir: "playwright-results/",
-});
+})
