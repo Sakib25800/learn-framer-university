@@ -18,6 +18,7 @@ env:
     CARGO_MACHETE_VERSION: 0.7.0
     NPM_VERSION: 11.1.0
     POSTGRES_VERSION: 17
+    CI: true
 
 jobs:
     changed-files:

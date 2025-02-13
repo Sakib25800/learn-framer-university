@@ -12,6 +12,9 @@ members = ["crates/*"]
 [package.metadata.cargo-machete]
 ignored = ["log"]
 
+[workspace.metadata.cargo-machete]
+ignored = ["log"]
+
 [workspace.lints.clippy]
 too_many_arguments = "allow"
 
