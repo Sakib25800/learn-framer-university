@@ -19,6 +19,7 @@ env:
     NPM_VERSION: 11.1.0
     POSTGRES_VERSION: 17
     CI: true
+    BACKEND_URL: http://localhost:8080
 
 jobs:
     changed-files:
@@ -141,6 +142,31 @@ jobs:
             - run: cargo build --tests --workspace
             - run: cargo test --workspace
 
+    frontend-lint:
+        name: Frontend / Lint
+        runs-on: ubuntu-latest
+        needs: changed-files
+        if: needs.changed-files.outputs.non-rust == 'true'
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  persist-credentials: false
+
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 22
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run ESLint
+              run: npm run lint
+
+            - name: Check Prettier formatting
+              run: npm run prettier
+
     frontend-e2e:
         name: Frontend / E2E
         runs-on: ubuntu-latest
@@ -167,7 +193,7 @@ jobs:
             - name: Run Playwright tests
               run: npx playwright test
 
-            - uses: actions/upload-artifact@v3
+            - uses: actions/upload-artifact@v4
               if: always()
               with:
                   name: playwright-results
@@ -198,7 +224,7 @@ jobs:
             - name: Run Jest tests
               run: npm run test:unit
 
-            - uses: actions/upload-artifact@v3
+            - uses: actions/upload-artifact@v4
               if: failure()
               with:
                   name: jest-report
