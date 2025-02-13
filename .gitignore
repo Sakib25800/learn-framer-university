@@ -54,3 +54,5 @@ playwright-results/
 
 # JUnit
 junit.xml
+
+.swc
