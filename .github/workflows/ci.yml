@@ -1,234 +1,242 @@
 name: CI
 
 on:
-    push:
-        branches:
-            - main
-            - master
+  push:
+    branches:
+      - main
+      - master
 
-    pull_request:
+  pull_request:
 
 concurrency:
-    group: ci-${{ github.head_ref || github.ref }}
-    cancel-in-progress: true
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 
 env:
-    CARGO_TERM_COLOR: always
-    CARGO_DENY_VERSION: 0.16.4
-    CARGO_MACHETE_VERSION: 0.7.0
-    NPM_VERSION: 11.1.0
-    POSTGRES_VERSION: 17
-    CI: true
-    BACKEND_URL: http://localhost:8080
+  CARGO_TERM_COLOR: always
+  CARGO_DENY_VERSION: 0.16.4
+  CARGO_MACHETE_VERSION: 0.7.0
+  NPM_VERSION: 11.1.0
+  POSTGRES_VERSION: 17
+  CI: true
+  BACKEND_URL: http://localhost:8080
 
 jobs:
-    changed-files:
-        name: Changed Files
-        runs-on: ubuntu-latest
+  changed-files:
+    name: Changed Files
+    runs-on: ubuntu-latest
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: tj-actions/changed-files@v45
-              id: changed-files-non-js
-              with:
-                  files_ignore: |
-                      app/**
-                      e2e/**
-                      public/**
-                      tests/**
-                      .eslintrc
-                      package.json
-                      package-lock.json
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-non-js
+        with:
+          files_ignore: |
+            app/**
+            e2e/**
+            public/**
+            tests/**
+            .gitignore
+            .prettierignore
+            eslint.config.mjs
+            jest.config.ts
+            jest.setup.ts
+            next.config.ts
+            playwright.config.ts
+            postcss.config.mjs
+            prettier.config.js
+            tailwind.config.ts
+            tsconfig.json
 
-            - uses: tj-actions/changed-files@v45
-              id: changed-files-non-rust
-              with:
-                  files_ignore: |
-                      crates/**
-                      migrations/**
-                      src/**
-                      build.rs
-                      Cargo.lock
-                      Cargo.toml
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-non-rust
+        with:
+          files_ignore: |
+            crates/**
+            migrations/**
+            src/**
+            build.rs
+            Cargo.lock
+            Cargo.toml
 
-            - uses: tj-actions/changed-files@v45
-              id: changed-files-rust-lockfile
-              with:
-                  files: Cargo.lock
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-rust-lockfile
+        with:
+          files: Cargo.lock
 
-        outputs:
-            non-js: ${{ steps.changed-files-non-js.outputs.any_modified }}
-            non-rust: ${{ steps.changed-files-non-rust.outputs.any_modified }}
-            rust-lockfile: ${{ steps.changed-files-rust-lockfile.outputs.any_modified }}
+    outputs:
+      non-js: ${{ steps.changed-files-non-js.outputs.any_modified }}
+      non-rust: ${{ steps.changed-files-non-rust.outputs.any_modified }}
+      rust-lockfile: ${{ steps.changed-files-rust-lockfile.outputs.any_modified }}
 
-    backend-lint:
-        name: Backend / Lint
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: needs.changed-files.outputs.non-js == 'true'
+  backend-lint:
+    name: Backend / Lint
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.non-js == 'true'
 
-        env:
-            RUSTFLAGS: "-D warnings"
-            RUSTDOCFLAGS: "-D warnings"
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - run: rustup component add rustfmt
-            - run: rustup component add clippy
+      - run: rustup component add rustfmt
+      - run: rustup component add clippy
 
-            - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
 
-            - run: cargo fmt --check --all
-            - run: cargo clippy --all-targets --all-features --workspace
-            - run: cargo doc --no-deps --document-private-items
+      - run: cargo fmt --check --all
+      - run: cargo clippy --all-targets --all-features --workspace
+      - run: cargo doc --no-deps --document-private-items
 
-    backend-deps:
-        name: Backend / Dependencies
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
+  backend-deps:
+    name: Backend / Dependencies
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2
 
-            - run: cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
-            - run: cargo machete
+      - run: cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
+      - run: cargo machete
 
-    backend-test:
-        name: Backend / Test
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: needs.changed-files.outputs.non-js == 'true'
+  backend-test:
+    name: Backend / Test
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.non-js == 'true'
 
-        env:
-            RUST_BACKTRACE: 1
-            TEST_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
-            RUSTFLAGS: "-D warnings -Cinstrument-coverage"
-            MALLOC_CONF: "background_thread:true,abort_conf:true,abort:true,junk:true"
-            CARGO_TARGET_DIR: /mnt/target
+    env:
+      RUST_BACKTRACE: 1
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
+      RUSTFLAGS: "-D warnings -Cinstrument-coverage"
+      MALLOC_CONF: "background_thread:true,abort_conf:true,abort:true,junk:true"
+      CARGO_TARGET_DIR: /mnt/target
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: Swatinem/rust-cache@v2
-              with:
-                  # Ensure that we cache from the right target directory. (See below
-                  # for the details of how and when this gets created.)
-                  workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
+      - uses: Swatinem/rust-cache@v2
+        with:
+          # Ensure that we cache from the right target directory. (See below
+          # for the details of how and when this gets created.)
+          workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
 
-            # Update `pg_dump` to the same version as the running PostgreSQL server
-            - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
-            - run: sudo systemctl start postgresql.service
-            - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
+      # Update `pg_dump` to the same version as the running PostgreSQL server
+      - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
+      - run: sudo systemctl start postgresql.service
+      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
 
-            # Create a working directory on /mnt, which is a larger temporary
-            # filesystem than /, that we can then point our later commands to.
-            - run: |
-                  sudo mkdir ${CARGO_TARGET_DIR}
-                  sudo chown $(id -u):$(id -g) ${CARGO_TARGET_DIR}
+      # Create a working directory on /mnt, which is a larger temporary
+      # filesystem than /, that we can then point our later commands to.
+      - run: |
+          sudo mkdir ${CARGO_TARGET_DIR}
+          sudo chown $(id -u):$(id -g) ${CARGO_TARGET_DIR}
 
-            - run: cargo build --tests --workspace
-            - run: cargo test --workspace
+      - run: cargo build --tests --workspace
+      - run: cargo test --workspace
 
-    frontend-lint:
-        name: Frontend / Lint
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: needs.changed-files.outputs.non-rust == 'true'
+  frontend-lint:
+    name: Frontend / Lint
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.non-rust == 'true'
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: 22
-                  cache: "npm"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 22
+          cache: "npm"
 
-            - name: Install dependencies
-              run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-            - name: Run ESLint
-              run: npm run lint
+      - name: Run ESLint
+        run: npm run lint
 
-            - name: Check Prettier formatting
-              run: npm run prettier
+      - name: Check Prettier formatting
+        run: npm run prettier
 
-    frontend-e2e:
-        name: Frontend / E2E
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: needs.changed-files.outputs.non-rust == 'true'
-        timeout-minutes: 60
+  frontend-e2e:
+    name: Frontend / E2E
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.non-rust == 'true'
+    timeout-minutes: 60
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: 18
-                  cache: "npm"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
 
-            - name: Install dependencies
-              run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-            - name: Install Playwright Browsers
-              run: npx playwright install --with-deps
+      - name: Install Playwright Browsers
+        run: npx playwright install --with-deps
 
-            - name: Run Playwright tests
-              run: npx playwright test
+      - name: Run Playwright tests
+        run: npx playwright test
 
-            - uses: actions/upload-artifact@v4
-              if: always()
-              with:
-                  name: playwright-results
-                  path: |
-                      playwright-results/
-                      test-results/
-                  retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-results
+          path: |
+            playwright-results/
+            test-results/
+          retention-days: 30
 
-    frontend-unit:
-        name: Frontend / Unit
-        runs-on: ubuntu-latest
-        needs: changed-files
-        if: needs.changed-files.outputs.non-rust == 'true'
+  frontend-unit:
+    name: Frontend / Unit
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.non-rust == 'true'
 
-        steps:
-            - uses: actions/checkout@v4
-              with:
-                  persist-credentials: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
-            - uses: actions/setup-node@v3
-              with:
-                  node-version: 18
-                  cache: "npm"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
 
-            - name: Install dependencies
-              run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-            - name: Run Jest tests
-              run: npm run test:unit
+      - name: Run Jest tests
+        run: npm run test:unit
 
-            - uses: actions/upload-artifact@v4
-              if: failure()
-              with:
-                  name: jest-report
-                  path: |
-                      coverage/
-                      junit.xml
-                  retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: jest-report
+          path: |
+            coverage/
+            junit.xml
+          retention-days: 30
