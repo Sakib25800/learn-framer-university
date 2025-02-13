@@ -238,6 +238,15 @@ docker compose up -d
 
 A number of names volumes are created, as can be seen in the `volumes` section of the `docker-compose.yml` file.
 
+## Git Hooks
+
+This project uses a git hook to enforce [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
+To install the git hook, run the following:
+```console
+brew install pre-commit
+pre-commit install -t commit-msg
+```
+
 ## Pull Requests
 
 When you submit a pull request, it will automatically be tested on GitHub Actions. In addition to running both the front and backend tests described below, GitHub Actions runs [clippy](https://github.com/rust-lang/rust-clippy) and [rustfmt](https://github.com/rust-lang/rustfmt) on each PR.

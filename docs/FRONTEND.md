@@ -13,12 +13,7 @@ npm install
 npm run dev
 ```
 3. Open `localhost:3000` in your browser.
-4. This project uses a git hook to enforce [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
-To install the git hook, run the following:
-```console
-brew install pre-commit
-pre-commit install -t commit-msg
-```
+
 
 ## Scripts Overview
 The following are available in the `package.json`:
