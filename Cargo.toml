@@ -1,5 +1,5 @@
 [package]
-name = "framer_university"
+name = "framer-university"
 version = "0.0.0"
 edition = "2021"
 authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]

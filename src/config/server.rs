@@ -1,13 +1,10 @@
 use config::{Config, Environment};
 use http::HeaderValue;
-use std::net::IpAddr;
 
 #[derive(serde::Deserialize)]
 pub struct Server {
     // Server
     pub env: Env,
-    pub ip: IpAddr,
-    pub port: u16,
     pub allowed_origins: AllowedOrigins,
     pub metrics_authorization_token: Option<String>,
     pub max_blocking_threads: Option<usize>,

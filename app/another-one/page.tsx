@@ -1,8 +1,9 @@
 import Link from "next/link"
+import { env } from "../../env.mjs"
 
 const fetchData = async () => {
   try {
-    const data = await fetch("/api/v1")
+    const data = await fetch(`${env.BACKEND_URL}/api/v1`)
     const json = await data.json()
     return json
   } catch (error) {

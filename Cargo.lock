@@ -850,7 +850,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "framer_university"
+name = "framer-university"
 version = "0.0.0"
 dependencies = [
  "anyhow",

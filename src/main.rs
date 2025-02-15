@@ -50,11 +50,9 @@ async fn main() -> anyhow::Result<()> {
 
     let make_service = axum_router.into_make_service_with_connect_info::<SocketAddr>();
 
-    let listener = tokio::net::TcpListener::bind((app.config.ip, app.config.port))
-        .await
-        .unwrap();
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
 
-    info!("Listening at {}:{}", app.config.ip, app.config.port);
+    info!("Listening at 0.0.0.0:8080");
 
     axum::serve(listener, make_service)
         .with_graceful_shutdown(shutdown_signal())

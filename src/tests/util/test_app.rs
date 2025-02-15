@@ -121,8 +121,6 @@ impl TestAppBuilder {
 fn simple_config() -> config::Server {
     config::Server {
         env: Env::Test,
-        ip: "127.0.0.1".parse().unwrap(),
-        port: 8080,
         allowed_origins: Default::default(),
         metrics_authorization_token: None,
         max_blocking_threads: None,
