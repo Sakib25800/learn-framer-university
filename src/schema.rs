@@ -63,9 +63,4 @@ diesel::table! {
 diesel::joinable!(accounts -> users (user_id));
 diesel::joinable!(refresh_tokens -> users (user_id));
 
-diesel::allow_tables_to_appear_in_same_query!(
-    accounts,
-    refresh_tokens,
-    users,
-    verification_tokens,
-);
+diesel::allow_tables_to_appear_in_same_query!(accounts, refresh_tokens, users, verification_tokens);

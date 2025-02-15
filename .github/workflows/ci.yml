@@ -5,7 +5,6 @@ on:
     branches:
       - main
       - master
-
   pull_request:
 
 concurrency:
@@ -19,7 +18,7 @@ env:
   NPM_VERSION: 11.1.0
   POSTGRES_VERSION: 17
   CI: true
-  BACKEND_URL: http://localhost:8080
+  BACKEND_URL: https://framer-university-dev-backend.fly.dev
 
 jobs:
   changed-files:
@@ -132,17 +131,13 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
         with:
-          # Ensure that we cache from the right target directory. (See below
-          # for the details of how and when this gets created.)
+          # Ensure that we cache from the right target directory.
           workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
 
-      # Update `pg_dump` to the same version as the running PostgreSQL server
       - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
       - run: sudo systemctl start postgresql.service
       - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
 
-      # Create a working directory on /mnt, which is a larger temporary
-      # filesystem than /, that we can then point our later commands to.
       - run: |
           sudo mkdir ${CARGO_TARGET_DIR}
           sudo chown $(id -u):$(id -g) ${CARGO_TARGET_DIR}
@@ -240,3 +235,27 @@ jobs:
             coverage/
             junit.xml
           retention-days: 30
+
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: [changed-files, backend-lint, backend-deps, backend-test]
+    if: github.ref == 'refs/heads/main' && needs.changed-files.outputs.non-js == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only --config fly.backend.toml --dockerfile backend.Dockerfile
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: [changed-files, frontend-lint, frontend-e2e, frontend-unit]
+    if: github.ref == 'refs/heads/main' && needs.changed-files.outputs.non-rust == 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only --config fly.frontend.toml --dockerfile frontend.Dockerfile
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

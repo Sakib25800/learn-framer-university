@@ -1,0 +1,56 @@
+repos:
+  - repo: https://github.com/qoomon/git-conventional-commits
+    rev: v2.6.3
+    hooks:
+      - id: conventional-commits
+        stages: [commit-msg]
+
+  - repo: local
+    hooks:
+      - id: lint-frontend
+        name: Lint Frontend
+        entry: npm run lint
+        language: node
+        types: [ts, tsx, javascript]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: prettier-frontend
+        name: Prettier Frontend
+        entry: npm run prettier
+        language: node
+        types: [ts, tsx, javascript]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: format-backend
+        name: Format Backend
+        entry: cargo fmt -- --check
+        language: system
+        types: [rust]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: clippy-backend
+        name: Clippy Backend
+        entry: cargo clippy --all-targets --all-features
+        language: system
+        types: [rust]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: test-backend
+        name: Test Backend
+        entry: cargo test --workspace
+        language: system
+        types: [rust]
+        pass_filenames: false
+        stages: [pre-commit]
+
+      - id: test-frontend
+        name: Test Frontend
+        entry: npm run test:unit
+        language: node
+        types: [ts, tsx, javascript]
+        pass_filenames: false
+        stages: [pre-commit]
