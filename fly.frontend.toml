@@ -6,8 +6,8 @@
 app = 'framer-university-dev-frontend'
 primary_region = 'lhr'
 
-[env]
-  BACKEND_URL = "http://framer-university-dev-backend.fly.dev"
+[build.args]
+BACKEND_URL = "http://framer-university-dev-backend.fly.dev"
 
 [http_service]
   internal_port = 3000
