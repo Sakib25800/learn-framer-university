@@ -79,8 +79,9 @@ jobs:
     services:
       postgres:
         image: postgres:17
-        env:
-          POSTGRES_PASSWORD: postgres
+        credentials:
+          username: postgres
+          password: postgres
         ports:
           - 5432:5432
         options: >-
