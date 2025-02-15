@@ -12,7 +12,6 @@ use std::time::Duration;
 use tracing::info_span;
 
 use std::net::SocketAddr;
-use tokio::net::TcpListener;
 use tokio::signal::unix::{signal, SignalKind};
 
 mod app;
@@ -32,9 +31,8 @@ pub mod tests;
 mod util;
 mod views;
 
-const CORE_THREADS: usize = 4;
-
-fn main() -> anyhow::Result<()> {
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     let _sentry = crate::sentry::init();
 
     crate::util::tracing::init();
@@ -50,29 +48,18 @@ fn main() -> anyhow::Result<()> {
 
     let axum_router = build_handler(app.clone());
 
-    let mut builder = tokio::runtime::Builder::new_multi_thread();
-    builder.enable_all();
-    builder.worker_threads(CORE_THREADS);
-    if let Some(threads) = app.config.max_blocking_threads {
-        builder.max_blocking_threads(threads);
-    }
-
-    let rt = builder.build()?;
-
     let make_service = axum_router.into_make_service_with_connect_info::<SocketAddr>();
 
-    // Block the main thread until the server has shutdown
-    rt.block_on(async {
-        let listener = TcpListener::bind((app.config.ip, app.config.port)).await?;
+    let listener = tokio::net::TcpListener::bind((app.config.ip, app.config.port))
+        .await
+        .unwrap();
 
-        let addr = listener.local_addr()?;
+    info!("Listening at {}:{}", app.config.ip, app.config.port);
 
-        info!("Listening at http://{addr}");
-
-        axum::serve(listener, make_service)
-            .with_graceful_shutdown(shutdown_signal())
-            .await
-    })?;
+    axum::serve(listener, make_service)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .unwrap();
 
     info!("Server has gracefully shutdown!");
     Ok(())

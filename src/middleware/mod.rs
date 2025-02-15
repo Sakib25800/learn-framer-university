@@ -5,14 +5,16 @@ use axum::middleware::{from_fn, from_fn_with_state};
 use axum::Router;
 use axum_extra::either::Either;
 use axum_extra::middleware::option_layer;
+use http::request::Parts;
+use http::HeaderValue;
 use std::time::Duration;
 use tower::layer::util::Identity;
 use tower_http::add_extension::AddExtensionLayer;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::compression::{CompressionLayer, CompressionLevel};
+use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::timeout::{RequestBodyTimeoutLayer, TimeoutLayer};
 
-pub mod app;
 pub mod auth;
 mod debug;
 pub mod json;
@@ -47,6 +49,10 @@ pub fn apply_axum_middleware(state: AppState, router: Router<()>) -> Router {
         .layer(TimeoutLayer::new(Duration::from_secs(30)))
         .layer(RequestBodyTimeoutLayer::new(Duration::from_secs(30)))
         .layer(CompressionLayer::new().quality(CompressionLevel::Fastest))
+        .layer(CorsLayer::new().allow_origin(AllowOrigin::predicate({
+            let allowed_origins = config.allowed_origins.clone();
+            move |origin: &HeaderValue, _request_parts: &Parts| allowed_origins.contains(origin)
+        })))
 }
 
 pub fn conditional_layer<L, F: FnOnce() -> L>(condition: bool, layer: F) -> Either<L, Identity> {

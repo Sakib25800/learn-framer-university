@@ -6,8 +6,6 @@ pub async fn auth(state: AppState, req: Request, next: Next) -> AppResult<Respon
 
     let (parts, body) = req.into_parts();
 
-    crate::controllers::util::verify_origin(&parts)?;
-
     let user = AuthCheck::check(&state.config.jwt_secret, &parts, &mut conn).await?;
 
     let mut req = Request::from_parts(parts, body);
