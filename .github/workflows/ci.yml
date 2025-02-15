@@ -1,4 +1,4 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
@@ -70,7 +70,7 @@ jobs:
       rust-lockfile: ${{ steps.changed-files-rust-lockfile.outputs.any_modified }}
 
   api:
-    name: API Checks
+    name: API / Checks
     runs-on: ubuntu-latest
     needs: changed-files
     if: needs.changed-files.outputs.non-js == 'true'
@@ -102,7 +102,7 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Setup Rust toolchain
+      - name: Setup Rust Toolchain
         run: |
           rustup component add rustfmt
           rustup component add clippy
@@ -111,33 +111,33 @@ jobs:
         with:
           workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
 
-      - name: Setup target directory
+      - name: Setup Target Directory
         run: |
           sudo mkdir -p ${CARGO_TARGET_DIR}
           sudo chown $(id -u):$(id -g) ${CARGO_TARGET_DIR}
 
-      - name: Check formatting
+      - name: Check Formatting
         run: cargo fmt --check --all
 
-      - name: Run clippy
+      - name: Run Clippy
         run: cargo clippy --all-targets --all-features --workspace
 
-      - name: Generate documentation
+      - name: Generate Documentation
         run: cargo doc --no-deps --document-private-items
 
-      - name: Check dependencies
+      - name: Check Dependencies
         if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
         run: |
           cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
           cargo machete
 
-      - name: Run tests
+      - name: Run Tests
         run: |
           cargo build --tests --workspace
           cargo test --workspace
 
   frontend:
-    name: Frontend Checks
+    name: Frontend / Checks
     runs-on: ubuntu-latest
     needs: changed-files
     if: needs.changed-files.outputs.non-rust == 'true'
@@ -163,7 +163,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-
 
-      - name: Install dependencies
+      - name: Install Dependencies
         if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
@@ -224,7 +224,7 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
         if: ${{ matrix.condition }}
 
-      - name: Deploy ${{ matrix.app }} to staging
+      - name: Deploy ${{ matrix.app }} to Staging
         if: ${{ matrix.condition }}
         run: flyctl deploy --remote-only --config ${{ matrix.config }} --dockerfile ${{ matrix.dockerfile }}
         env:
@@ -255,7 +255,7 @@ jobs:
       - uses: superfly/flyctl-actions/setup-flyctl@master
         if: ${{ matrix.condition }}
 
-      - name: Deploy ${{ matrix.app }} to production
+      - name: Deploy ${{ matrix.app }} to Production
         if: ${{ matrix.condition }}
         run: flyctl deploy --remote-only --config ${{ matrix.config }} --dockerfile ${{ matrix.dockerfile }}
         env:
