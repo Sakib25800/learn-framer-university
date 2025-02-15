@@ -24,7 +24,6 @@ jobs:
   changed-files:
     name: Changed Files
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
         with:
@@ -71,56 +70,30 @@ jobs:
       non-rust: ${{ steps.changed-files-non-rust.outputs.any_modified }}
       rust-lockfile: ${{ steps.changed-files-rust-lockfile.outputs.any_modified }}
 
-  backend-lint:
-    name: Backend / Lint
+  backend:
+    name: Backend Checks
     runs-on: ubuntu-latest
     needs: changed-files
     if: needs.changed-files.outputs.non-js == 'true'
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
-      RUSTFLAGS: "-D warnings"
+      RUSTFLAGS: "-D warnings -Cinstrument-coverage"
       RUSTDOCFLAGS: "-D warnings"
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - run: rustup component add rustfmt
-      - run: rustup component add clippy
-
-      - uses: Swatinem/rust-cache@v2
-
-      - run: cargo fmt --check --all
-      - run: cargo clippy --all-targets --all-features --workspace
-      - run: cargo doc --no-deps --document-private-items
-
-  backend-deps:
-    name: Backend / Dependencies
-    runs-on: ubuntu-latest
-    needs: changed-files
-    if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: Swatinem/rust-cache@v2
-
-      - run: cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
-      - run: cargo machete
-
-  backend-test:
-    name: Backend / Test
-    runs-on: ubuntu-latest
-    needs: changed-files
-    if: needs.changed-files.outputs.non-js == 'true'
-
-    env:
       RUST_BACKTRACE: 1
       TEST_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
-      RUSTFLAGS: "-D warnings -Cinstrument-coverage"
       MALLOC_CONF: "background_thread:true,abort_conf:true,abort:true,junk:true"
       CARGO_TARGET_DIR: /mnt/target
 
@@ -129,49 +102,42 @@ jobs:
         with:
           persist-credentials: false
 
+      - name: Setup Rust toolchain
+        run: |
+          rustup component add rustfmt
+          rustup component add clippy
+
       - uses: Swatinem/rust-cache@v2
         with:
-          # Ensure that we cache from the right target directory.
           workspaces: ". -> ${{ env.CARGO_TARGET_DIR }}"
 
-      - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
-      - run: sudo systemctl start postgresql.service
-      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
-
-      - run: |
-          sudo mkdir ${CARGO_TARGET_DIR}
+      - name: Setup target directory
+        run: |
+          sudo mkdir -p ${CARGO_TARGET_DIR}
           sudo chown $(id -u):$(id -g) ${CARGO_TARGET_DIR}
 
-      - run: cargo build --tests --workspace
-      - run: cargo test --workspace
+      - name: Check formatting
+        run: cargo fmt --check --all
 
-  frontend-lint:
-    name: Frontend / Lint
-    runs-on: ubuntu-latest
-    needs: changed-files
-    if: needs.changed-files.outputs.non-rust == 'true'
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features --workspace
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+      - name: Generate documentation
+        run: cargo doc --no-deps --document-private-items
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 22
-          cache: "npm"
+      - name: Check dependencies
+        if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
+        run: |
+          cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
+          cargo machete
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Run tests
+        run: |
+          cargo build --tests --workspace
+          cargo test --workspace
 
-      - name: Run ESLint
-        run: npm run lint
-
-      - name: Check Prettier formatting
-        run: npm run prettier
-
-  frontend-e2e:
-    name: Frontend / E2E
+  frontend:
+    name: Frontend Checks
     runs-on: ubuntu-latest
     needs: changed-files
     if: needs.changed-files.outputs.non-rust == 'true'
@@ -184,78 +150,82 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 22
           cache: "npm"
 
+      - uses: actions/cache@v3
+        id: npm-cache
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
       - name: Install dependencies
+        if: steps.npm-cache.outputs.cache-hit != 'true'
         run: npm ci
 
-      - name: Install Playwright Browsers
+      - name: Lint and Format
+        run: |
+          npm run lint
+          npm run prettier
+
+      - name: Unit Tests
+        run: npm run test:unit
+
+      - uses: actions/cache@v3
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('**/package-lock.json') }}
+
+      - name: Install Playwright
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests
+      - name: Run E2E Tests
         run: npx playwright test
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-results
-          path: |
-            playwright-results/
-            test-results/
-          retention-days: 30
-
-  frontend-unit:
-    name: Frontend / Unit
-    runs-on: ubuntu-latest
-    needs: changed-files
-    if: needs.changed-files.outputs.non-rust == 'true'
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Run Jest tests
-        run: npm run test:unit
 
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: jest-report
+          name: test-results
           path: |
+            playwright-results/
+            test-results/
             coverage/
             junit.xml
           retention-days: 30
 
-  deploy-backend:
-    name: Backend / Deploy
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
-    needs: [changed-files, backend-lint, backend-deps, backend-test]
-    if: github.ref == 'refs/heads/main' && needs.changed-files.outputs.non-js == 'true'
-    steps:
-      - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --config fly.backend.toml --dockerfile backend.Dockerfile
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    needs: [changed-files, backend, frontend]
+    if: github.ref == 'refs/heads/main'
+    strategy:
+      matrix:
+        app: [backend, frontend]
+        include:
+          - app: backend
+            condition: needs.changed-files.outputs.non-js == 'true'
+            config: fly.backend.toml
+            dockerfile: backend.Dockerfile
+          - app: frontend
+            condition: needs.changed-files.outputs.non-rust == 'true'
+            config: fly.frontend.toml
+            dockerfile: frontend.Dockerfile
 
-  deploy-frontend:
-    name: Frontend / Deploy
-    runs-on: ubuntu-latest
-    needs: [changed-files, frontend-lint, frontend-e2e, frontend-unit]
-    if: github.ref == 'refs/heads/main' && needs.changed-files.outputs.non-rust == 'true'
     steps:
       - uses: actions/checkout@v4
+        if: ${{ matrix.condition }}
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      - run: flyctl deploy --remote-only --config fly.frontend.toml --dockerfile frontend.Dockerfile
+        if: ${{ matrix.condition }}
+
+      - name: Deploy ${{ matrix.app }}
+        if: ${{ matrix.condition }}
+        run: flyctl deploy --remote-only --config ${{ matrix.config }} --dockerfile ${{ matrix.dockerfile }}
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
