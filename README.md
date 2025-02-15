@@ -252,3 +252,13 @@ pre-commit install -t commit-msg
 When you submit a pull request, it will automatically be tested on GitHub Actions. In addition to running both the front and backend tests described below, GitHub Actions runs [clippy](https://github.com/rust-lang/rust-clippy) and [rustfmt](https://github.com/rust-lang/rustfmt) on each PR.
 
 To run these tools locally in order to fix issues before submitting, consult each tool's installation instructions and the [.github/workflows/ci.yml](https://github.com/Sakib25800/framer-university/tree/main/.github/workflows/ci.yml).
+
+## Developemnt Flow
+
+```
+Feature Branch -> PR -> Staging -> Main -> Production
+```
+
+Staging deployments occur automatically upon an opened PR against `main`.
+
+Production deployments occur automatically upon merging and pushing to `main`.

@@ -1,23 +1,21 @@
-# fly.toml app configuration file generated for framer-university-dev-frontend on 2025-02-15T15:16:00Z
-#
-# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
-
-app = 'framer-university-dev-frontend'
+app = 'learn-framer-university'
 primary_region = 'lhr'
 
+[build]
+dockerfile = 'frontend.Dockerfile'
+
 [build.args]
-BACKEND_URL = "http://framer-university-dev-backend.fly.dev"
+BACKEND_URL = 'http://learn-framer-university-api.fly.dev'
 
 [http_service]
-  internal_port = 3000
-  force_https = true
-  auto_stop_machines = 'stop'
-  auto_start_machines = true
-  min_machines_running = 0
-  processes = ['app']
+internal_port = 3000
+force_https = true
+auto_stop_machines = 'stop'
+auto_start_machines = true
+min_machines_running = 0
+processes = ['app']
 
 [[vm]]
-  memory = '1gb'
-  cpu_kind = 'shared'
-  cpus = 1
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

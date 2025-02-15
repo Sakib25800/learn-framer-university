@@ -21,6 +21,18 @@ too_many_arguments = "allow"
 [lints]
 workspace = true
 
+[profile.staging]
+inherits = "dev"
+opt-level = 2
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+rpath = false
+
 [profile.release]
 opt-level = 2
 

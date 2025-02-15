@@ -7,12 +7,12 @@ Documentation about the codebase appears in these locations:
 - `README.md` - Important information to show on the github front page.
 - `docs/` - Long-form documentation.
 
-## Backend - Rust
+## API - Rust
 
-The backend  is written in Rust. Most of that code lives in the _src_ directory. It
+The API  is written in Rust. Most of that code lives in the _src_ directory. It
 serves a JSON API over HTTP, and the HTTP server interface is provided by the [axum](https://crates.io/crates/axum) crate and
-related crates. More information about the backend is in
-[`docs/BACKEND.md`](https://github.com/sakib25800/framer-university/blob/main/docs/BACKEND.md).
+related crates. More information about the API is in
+[`docs/API.md`](https://github.com/sakib25800/framer-university/blob/main/docs/API.md).
 
 These files and directories have to do with the backend:
 
@@ -20,11 +20,11 @@ These files and directories have to do with the backend:
   and deployment
 - `Cargo.toml` - Defines the crate and its dependencies
 - `migrations/` - Diesel migrations applied to the database during development and deployment
-- `src/` - The backend's source code
+- `src/` - The API's source code
 - `target/` - Compiled output, including dependencies and final binary artifacts - (ignored in
   `.gitignore`)
 
-The backend stores information in a Postgres database.
+The API stores information in a Postgres database.
 
 ## Frontend - Next.js
 
@@ -48,10 +48,17 @@ learn.framer.university is deployed on [Fly](https://fly.io/).
 
 These files are Fly-specific; for deployment to Fly.
 
-- `fly.backend.toml` - Fly config for backend
+- `fly.api.toml` - Fly config for the API
+- `fly.staging.api.toml` - Fly config for the staging API
+
 - `fly.frontend.toml` - Fly config for frontend
-- `Dockerfile.backend` - Dockerfile config for backend
-- `Dockerfile.frontend` - Dockerfile config for frontend
+- `fly.staging.frontend.toml` - Fly config for frontend
+
+- `api.Dockerfile` - Dockerfile config for the API
+- `api.staging.Dockerfile` - Dockerfile config for the staging API
+
+- `frontend.Dockerfile` - Dockerfile config for frontend
+- `frontend.staging.Dockerfile` - Dockerfile config for staging frontend
 
 ## Development
 
