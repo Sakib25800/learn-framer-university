@@ -10,7 +10,7 @@ ENV CARGO_PROFILE_DEV_OPT_LEVEL=2
 # Build with development profile but with some optimizations
 RUN --mount=type=cache,target=/usr/local/cargo,from=rust:latest,source=/usr/local/cargo \
     --mount=type=cache,target=target \
-    cargo build && mv ./target/debug/framer-university ./framer-university
+    cargo build && mv ./target/debug/learn-framer-university ./learn-framer-university
 
 # Runtime image
 FROM debian:bookworm-slim
@@ -27,11 +27,11 @@ USER app
 WORKDIR /app
 
 # Get compiled binaries from builder's cargo install directory
-COPY --from=builder /usr/src/app/framer-university /app/framer-university
+COPY --from=builder /usr/src/app/learn-framer-university /app/learn-framer-university
 
 # Set environment variable to indicate staging
 ENV APP_ENV=staging
 ENV RUST_LOG=info
 
 # Run the app
-CMD ./framer-university
+CMD ./learn-framer-university

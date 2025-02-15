@@ -5,7 +5,7 @@ COPY . .
 # Will build and cache the binary and dependent crates in release mode
 RUN --mount=type=cache,target=/usr/local/cargo,from=rust:latest,source=/usr/local/cargo \
     --mount=type=cache,target=target \
-    cargo build --release && mv ./target/release/framer-university ./framer-university
+    cargo build --release && mv ./target/release/learn-framer-university ./learn-framer-university
 
 # Runtime image
 FROM debian:bookworm-slim
@@ -22,7 +22,7 @@ USER app
 WORKDIR /app
 
 # Get compiled binaries from builder's cargo install directory
-COPY --from=builder /usr/src/app/framer-university /app/framer-university
+COPY --from=builder /usr/src/app/learn-framer-university /app/learn-framer-university
 
 # Run the app
-CMD ./framer-university
+CMD ./learn-framer-university

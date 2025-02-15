@@ -1,9 +1,9 @@
 [package]
-name = "framer-university"
+name = "learn-framer-university"
 version = "0.0.0"
 edition = "2021"
 authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
-repository = "https://github.com/sakib25800/framer-university"
+repository = "https://github.com/sakib25800/learn-framer-university"
 description = "Backend of learn.framer.university"
 
 [workspace]

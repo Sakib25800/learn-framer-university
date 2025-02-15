@@ -12,7 +12,7 @@ Documentation about the codebase appears in these locations:
 The API  is written in Rust. Most of that code lives in the _src_ directory. It
 serves a JSON API over HTTP, and the HTTP server interface is provided by the [axum](https://crates.io/crates/axum) crate and
 related crates. More information about the API is in
-[`docs/API.md`](https://github.com/sakib25800/framer-university/blob/main/docs/API.md).
+[`docs/API.md`](https://github.com/sakib25800/learn-framer-university/blob/main/docs/API.md).
 
 These files and directories have to do with the backend:
 
@@ -29,7 +29,7 @@ The API stores information in a Postgres database.
 ## Frontend - Next.js
 
 The frontend of is written in Typescript using [Next.js][https://nextjs.org]. More information about the
-frontend is in [`docs/FRONTEND.md`](https://github.com/sakib25800/framer-university/blob/main/docs/FRONTEND.md).
+frontend is in [`docs/FRONTEND.md`](https://github.com/sakib25800/learn-framer-university/blob/main/docs/FRONTEND.md).
 
 These files have to do with the frontend:
 
