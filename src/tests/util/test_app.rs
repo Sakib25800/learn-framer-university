@@ -1,6 +1,7 @@
 use super::{MockAnonymousUser, MockAuthUser};
 use crate::app::App;
 use crate::auth::generate_tokens;
+use crate::email::Emails;
 use crate::{
     build_handler,
     config::{self, Env},
@@ -12,7 +13,9 @@ use axum::middleware::Next;
 use axum_test::TestServer;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
 use framer_university_test_db::TestDatabase;
+use regex::Regex;
 use std::net::SocketAddr;
+use std::sync::LazyLock;
 use std::{rc::Rc, sync::Arc};
 
 struct TestAppInner {
@@ -70,6 +73,36 @@ impl TestApp {
             user,
             tokens,
         }
+    }
+
+    pub async fn emails(&self) -> Vec<String> {
+        let emails = self.as_inner().emails.mails_in_memory().await.unwrap();
+        emails.into_iter().map(|(_, email)| email).collect()
+    }
+
+    pub async fn emails_snapshot(&self) -> String {
+        static EMAIL_HEADER_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"(Message-ID|Date): [^\r\n]+\r\n").unwrap());
+
+        static DATE_TIME_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z").unwrap());
+
+        static EMAIL_CONFIRM_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"/confirm/\w+").unwrap());
+
+        static SEPARATOR: &str = "\n----------------------------------------\n\n";
+
+        self.emails()
+            .await
+            .into_iter()
+            .map(|email| {
+                let email = EMAIL_HEADER_REGEX.replace_all(&email, "");
+                let email = DATE_TIME_REGEX.replace_all(&email, "[0000-00-00T00:00:00Z]");
+                let email = EMAIL_CONFIRM_REGEX.replace_all(&email, "/confirm/[confirm-token]");
+                email.to_string()
+            })
+            .collect::<Vec<_>>()
+            .join(SEPARATOR)
     }
 
     /// Obtain a reference to the inner `App` value
@@ -131,6 +164,10 @@ fn simple_config() -> config::Server {
         email_verification_expiration_hours: 24,
         connection_timeout_seconds: 1,
         pool_size: 5,
+        mailgun_smtp_login: "test_login".to_string(),
+        mailgun_smtp_password: "test_password".to_string(),
+        mailgun_smtp_server: "test_domain".to_string(),
+        domain_name: "test_domain".to_string(),
         // This value is to be overridden by the
         // `TestAppBuilder::empty()` fn.
         database_url: "empty".to_string(),
@@ -138,11 +175,14 @@ fn simple_config() -> config::Server {
 }
 
 fn build_app(config: config::Server) -> (Arc<App>, TestServer) {
-    let app = Arc::new(App::new(config));
+    // Use in-memory email backend for all tests, allowing tests to analyse emails sent.
+    let emails = Emails::new_in_memory();
+
+    let app = Arc::new(App::new(config, emails));
 
     let router = build_handler(Arc::clone(&app));
     // Manually add socket address to request extensions to prevent
-    // real_ip middleware from failing
+    // real_ip middleware from failing.
     let router = router.layer(axum::middleware::from_fn(
         |request: Request<Body>, next: Next| async {
             let mut request = request;

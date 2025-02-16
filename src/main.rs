@@ -6,6 +6,7 @@ extern crate serde;
 extern crate tracing;
 
 use app::{App, AppState};
+use email::Emails;
 use router::build_axum_router;
 use std::sync::Arc;
 use std::time::Duration;
@@ -18,6 +19,7 @@ mod app;
 mod auth;
 mod config;
 mod controllers;
+mod email;
 mod headers;
 mod metrics;
 mod middleware;
@@ -41,7 +43,9 @@ async fn main() -> anyhow::Result<()> {
 
     let config = crate::config::Server::from_environment()?;
 
-    let app = Arc::new(App::new(config));
+    let emails = Emails::from_environment(&config);
+
+    let app = Arc::new(App::new(config, emails));
 
     // Start the background thread periodically logging instance metrics
     log_instance_metrics_thread(app.clone());

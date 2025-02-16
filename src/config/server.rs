@@ -18,6 +18,12 @@ pub struct Server {
     pub database_url: String,
     pub connection_timeout_seconds: u64,
     pub pool_size: usize,
+    // Email
+    pub mailgun_smtp_login: String,
+    pub mailgun_smtp_password: String,
+    pub mailgun_smtp_server: String,
+    // Other
+    pub domain_name: String,
 }
 
 /// Used for setting different values depending on whether the app is being run in production,

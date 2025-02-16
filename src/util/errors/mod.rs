@@ -18,7 +18,7 @@ use json::custom;
 use tokio::task::JoinError;
 use validator::ValidationErrors;
 
-use crate::middleware::log_request::ErrorField;
+use crate::{email::EmailError, middleware::log_request::ErrorField};
 
 mod json;
 
@@ -149,6 +149,19 @@ impl From<JoinError> for BoxedAppError {
 impl From<ValidationErrors> for BoxedAppError {
     fn from(err: ValidationErrors) -> BoxedAppError {
         Box::new(err)
+    }
+}
+
+impl From<EmailError> for BoxedAppError {
+    fn from(error: EmailError) -> Self {
+        match error {
+            EmailError::AddressError(error) => Box::new(error),
+            EmailError::MessageBuilderError(error) => Box::new(error),
+            EmailError::TransportError(error) => {
+                error!(?error, "Failed to send email");
+                internal("Failed to send the email")
+            }
+        }
     }
 }
 

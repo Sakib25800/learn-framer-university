@@ -1,6 +1,7 @@
 //! Application-wide components in a struct accessible from each request
 
 use crate::config::{self, Env};
+use crate::email::Emails;
 use crate::metrics::{InstanceMetrics, ServiceMetrics};
 use axum::extract::{FromRequestParts, State};
 use deadpool_diesel::Runtime;
@@ -26,6 +27,9 @@ pub struct App {
     /// Metrics related the service as a whole
     pub service_metrics: ServiceMetrics,
 
+    /// Backend to send emails
+    pub emails: Emails,
+
     /// Metrics related to this specific instance of the service
     pub instance_metrics: InstanceMetrics,
 }
@@ -38,7 +42,7 @@ impl App {
     /// - TODO: Google OAuth
     /// - Database migrations
     /// - Database connection pool
-    pub fn new(config: config::Server) -> App {
+    pub fn new(config: config::Server, emails: Emails) -> App {
         let instance_metrics =
             InstanceMetrics::new().expect("could not initialise instance metrics");
 
@@ -59,6 +63,7 @@ impl App {
 
         App {
             instance_metrics,
+            emails,
             database: pool,
             config: Arc::new(config),
             service_metrics: ServiceMetrics::new().expect("could not intialise service metrics"),
