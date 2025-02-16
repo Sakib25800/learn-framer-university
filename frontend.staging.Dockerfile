@@ -1,9 +1,8 @@
 ARG NODE_VERSION=23.6.0
 FROM node:${NODE_VERSION}-slim AS base
 
-ARG BACKEND_URL
-ENV BACKEND_URL=${BACKEND_URL}
-ENV NODE_ENV="staging"
+ARG API_URL
+ENV API_URL=${API_URL}
 
 LABEL fly_launch_runtime="Next.js"
 

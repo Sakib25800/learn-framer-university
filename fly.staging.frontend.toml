@@ -5,8 +5,7 @@ primary_region = 'lhr'
 dockerfile = 'frontend.staging.Dockerfile'
 
 [build.args]
-BACKEND_URL = 'http://learn-framer-university-api-staging.fly.dev'
-NODE_ENV = 'staging'
+API_URL = 'http://learn-framer-university-api-staging.fly.dev'
 
 [http_service]
 internal_port = 3000
