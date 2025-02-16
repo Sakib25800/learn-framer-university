@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
@@ -29,9 +29,20 @@ jobs:
           persist-credentials: false
 
       - uses: tj-actions/changed-files@v45
-        id: changed-files-non-js
+        id: changed-files-rust
         with:
-          files_ignore: |
+          files: |
+            crates/**
+            migrations/**
+            src/**
+            build.rs
+            Cargo.lock
+            Cargo.toml
+
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-js
+        with:
+          files: |
             app/**
             e2e/**
             public/**
@@ -49,31 +60,20 @@ jobs:
             tsconfig.json
 
       - uses: tj-actions/changed-files@v45
-        id: changed-files-non-rust
-        with:
-          files_ignore: |
-            crates/**
-            migrations/**
-            src/**
-            build.rs
-            Cargo.lock
-            Cargo.toml
-
-      - uses: tj-actions/changed-files@v45
         id: changed-files-rust-lockfile
         with:
           files: Cargo.lock
 
     outputs:
-      non-js: ${{ steps.changed-files-non-js.outputs.any_modified }}
-      non-rust: ${{ steps.changed-files-non-rust.outputs.any_modified }}
+      rust: ${{ steps.changed-files-rust.outputs.any_modified }}
+      js: ${{ steps.changed-files-js.outputs.any_modified }}
       rust-lockfile: ${{ steps.changed-files-rust-lockfile.outputs.any_modified }}
 
   api:
     name: API / Checks
     runs-on: ubuntu-latest
     needs: changed-files
-    if: needs.changed-files.outputs.non-js == 'true'
+    if: needs.changed-files.outputs.rust == 'true'
 
     services:
       postgres:
@@ -140,7 +140,7 @@ jobs:
     name: Frontend / Checks
     runs-on: ubuntu-latest
     needs: changed-files
-    if: needs.changed-files.outputs.non-rust == 'true'
+    if: needs.changed-files.outputs.js == 'true'
     timeout-minutes: 60
 
     steps:
@@ -209,11 +209,11 @@ jobs:
         app: [api, frontend]
         include:
           - app: api
-            condition: needs.changed-files.outputs.non-js == 'true'
+            condition: needs.changed-files.outputs.rust == 'true'
             config: fly.staging.api.toml
             dockerfile: staging.api.Dockerfile
           - app: frontend
-            condition: needs.changed-files.outputs.non-rust == 'true'
+            condition: needs.changed-files.outputs.js == 'true'
             config: fly.staging.frontend.toml
             dockerfile: staging.frontend.Dockerfile
 
@@ -240,11 +240,11 @@ jobs:
         app: [api, frontend]
         include:
           - app: api
-            condition: needs.changed-files.outputs.non-js == 'true'
+            condition: needs.changed-files.outputs.rust == 'true'
             config: fly.api.toml
             dockerfile: api.Dockerfile
           - app: frontend
-            condition: needs.changed-files.outputs.non-rust == 'true'
+            condition: needs.changed-files.outputs.js == 'true'
             config: fly.frontend.toml
             dockerfile: frontend.Dockerfile
 
