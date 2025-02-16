@@ -131,9 +131,9 @@ link below to verify your email address. Thank you!
 https://learn.framer.university/confirm/RiphVyFo31wuKQhpyTw7RF2LIf
 ```
 
-When verifying the email, the prefix may need to be changed to the frontend host e.g. `https://localhost:8080/confirm/32i10234u0weth`.
+When verifying the email, the prefix may need to be changed to the frontend host e.g. `http://localhost:8080/confirm/32i10234u0weth`.
 
-To start sending real emails, set the Mailgum environment variablse in `.env` manually.
+To start sending real emails, set the Mailgun environment variables in `.env` manually.
 
 To set the environment variables manually, create an account and configure Mailgun.
 Use these [quick start instructions](https://documentation.mailgun.com/en/latest/quickstart.html).
@@ -150,93 +150,6 @@ To run the tests, run the following:
 ```console
 cargo test
 ```
-
-### Running learn.framer.university with Docker
-
-There are Dockerfiles to build both the backend and the frontend,
-(`backend.Dockerfile` and `frontend.Dockerfile`) respectively, but it is most
-useful to just use docker-compose to bring up everything that's needed all in
-one go:
-
-```console
-docker compose up -d
-```
-
-These environment variables can also be defined in a local `.env` file, see `.env.sample`
-for various configuration options.
-
-#### Colima
-
-Rather than use Docker Desktop, you can use Colima to run Docker on your Mac.
-
-Start Colima:
-
-```console
-colima start
-```
-
-Stop Colima:
-
-```console
-colima stop
-```
-
-Restart Colima:
-
-```console
-colima restart
-```
-
-#### Accessing services
-
-By default, the services will be exposed on their normal ports:
-
-- `5432` for Postgres
-- `8080` for the learn.framer.university backend
-- `3000` for the learn.framer.university frontend
-
-These can be changed with the `docker-compose.override.yml` file.
-
-#### Changing code
-
-The `app/` directory is mounted directly into the frontend Docker container,
-which means that the Next.js live-reload server will still just work. If
-anything outside of `app/` is changed, the base Docker image will have to be
-rebuilt:
-
-```console
-# Rebuild frontend Docker image
-docker compose build frontend
-
-# Restart running frontend container (if it's already running)
-docker compose stop frontend
-docker compose rm frontend
-docker compose up -d
-```
-
-Similarly, the `src/` directory is mounted into the backend Docker container,
-so in order to recompile the backend, run:
-
-```console
-docker compose restart backend
-```
-
-If anything outside of `src/` is changed, the base Docker image will have to be
-rebuilt:
-
-```console
-# Rebuild backend Docker image
-docker compose build backend
-
-# Restart running backend container (if it's already running)
-docker compose stop backend
-docker compose rm backend
-docker compose up -d
-```
-
-#### Volumes
-
-A number of names volumes are created, as can be seen in the `volumes` section of the `docker-compose.yml` file.
 
 ## Git Hooks
 

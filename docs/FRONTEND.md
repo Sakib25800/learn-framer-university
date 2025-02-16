@@ -41,7 +41,7 @@ Located in the `components` directory, each component's unit tests can be found 
 
 ### E2E Tests
 
-Located in the `_e2e_` directory.
+Located in the `_e2e_` directory. Uses [Playwright](https://playwright.dev/).
 
 ### Acceptance Tests
 
