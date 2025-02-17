@@ -173,7 +173,6 @@ fn simple_config() -> config::Server {
         env: Env::Test,
         allowed_origins: Default::default(),
         metrics_authorization_token: None,
-        max_blocking_threads: None,
         instance_metrics_log_every_seconds: None,
         jwt_secret: "test_secret".to_string(),
         jwt_access_token_expiration_hours: 1,

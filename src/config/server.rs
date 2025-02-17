@@ -7,7 +7,6 @@ pub struct Server {
     pub env: Env,
     pub allowed_origins: AllowedOrigins,
     pub metrics_authorization_token: Option<String>,
-    pub max_blocking_threads: Option<usize>,
     pub instance_metrics_log_every_seconds: Option<u64>,
     // Auth
     pub jwt_secret: String,
@@ -46,7 +45,8 @@ impl Server {
 
         let builder = Config::builder()
             .add_source(Environment::default())
-            .set_default("env", env)?;
+            .set_default("env", env)?
+            .set_default("domain_name", "learn.framer.university")?;
 
         Ok(builder.build()?.try_deserialize()?)
     }
