@@ -48,16 +48,16 @@ learn.framer.university is deployed on [Fly](https://fly.io/).
 
 These files are Fly-specific; for deployment to Fly.
 
-- `fly.api.toml` - Fly config for the API
+- `fly.api.toml` - Fly config for production API
 - `fly.staging.api.toml` - Fly config for the staging API
 
-- `fly.frontend.toml` - Fly config for frontend
-- `fly.staging.frontend.toml` - Fly config for frontend
+- `fly.frontend.toml` - Fly config for production frontend
+- `fly.staging.frontend.toml` - Fly config for staging frontend
 
-- `api.Dockerfile` - Dockerfile config for the API
+- `api.Dockerfile` - Dockerfile config for production API
 - `api.staging.Dockerfile` - Dockerfile config for the staging API
 
-- `frontend.Dockerfile` - Dockerfile config for frontend
+- `frontend.Dockerfile` - Dockerfile config for production frontend
 - `frontend.staging.Dockerfile` - Dockerfile config for staging frontend
 
 ## Development
