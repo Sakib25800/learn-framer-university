@@ -10,12 +10,10 @@ use utoipa_axum::routes;
 pub fn build_axum_router(state: AppState) -> Router<()> {
     let (public_router, public_openapi) = BaseOpenApi::router()
         .routes(routes!(health::health_check))
-        .routes(routes!(auth::login, auth::verify))
+        .routes(routes!(auth::signin, auth::continue_signin))
         .split_for_parts();
 
-    let (protected_router, protected_openapi) = BaseOpenApi::router()
-        .routes(routes!(user::me::get_authenticated_user))
-        .split_for_parts();
+    let (protected_router, protected_openapi) = BaseOpenApi::router().split_for_parts();
 
     let protected_router = protected_router.layer(middleware::from_fn_with_state(
         state.clone(),
@@ -27,8 +25,8 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
     Router::new()
         .merge(public_router)
         .merge(protected_router)
-        .route("/api/private/metrics/{kind}", get(metrics::prometheus))
-        .route("/api/openapi.json", get(|| async { Json(openapi) }))
+        .route("/private/metrics/{kind}", get(metrics::prometheus))
+        .route("/openapi.json", get(|| async { Json(openapi) }))
         .fallback(|method: Method| async move {
             match method {
                 Method::HEAD => StatusCode::NOT_FOUND.into_response(),

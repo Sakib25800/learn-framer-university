@@ -36,6 +36,13 @@ impl VerificationToken {
             .execute(conn)
             .await
     }
+
+    pub async fn delete_all(identifier: &str, conn: &mut AsyncPgConnection) -> QueryResult<usize> {
+        diesel::delete(verification_tokens::table)
+            .filter(verification_tokens::identifier.eq(identifier))
+            .execute(conn)
+            .await
+    }
 }
 
 #[derive(Insertable, Debug)]

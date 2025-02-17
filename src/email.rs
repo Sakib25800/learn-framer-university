@@ -29,15 +29,15 @@ impl Emails {
     /// Create a new instance detecting the backend from the environment. This will either connect
     /// to a SMTP server or store the emails on the local filesystem.
     pub fn from_environment(config: &config::Server) -> Self {
-        let config::Server {
-            mailgun_smtp_login: login,
-            mailgun_smtp_password: password,
-            mailgun_smtp_server: server,
-            ..
-        } = config;
+        let login = dotenvy::var("MAILGUN_SMTP_LOGIN");
+        let password = dotenvy::var("MAILGUN_SMTP_PASSWORD");
+        let server = dotenvy::var("MAILGUN_SMTP_SERVER");
+
+        let from = login.as_deref().unwrap_or(DEFAULT_FROM).parse().unwrap();
 
         let backend = match (login, password, server) {
-            (login, password, server) => {
+            (Ok(login), Ok(password), Ok(server)) => {
+                // All required SMTP credentials are present
                 let transport = AsyncSmtpTransport::<Tokio1Executor>::relay(&server)
                     .unwrap()
                     .credentials(Credentials::new(login.to_owned(), password.to_owned()))
@@ -47,6 +47,7 @@ impl Emails {
                 EmailBackend::Smtp(Box::new(transport))
             }
             _ => {
+                // Fall back to filesystem transport if any SMTP credentials are missing
                 let transport = AsyncFileTransport::new("/tmp");
                 EmailBackend::FileSystem(Arc::new(transport))
             }
@@ -61,7 +62,7 @@ impl Emails {
         Self {
             backend,
             domain,
-            from: login.parse().unwrap(),
+            from,
         }
     }
 
@@ -121,18 +122,18 @@ impl Emails {
         self.backend
             .send(email)
             .await
-            .map_err(EmailError::TransportError)
+            .map_err(EmailError::Transport)
     }
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum EmailError {
     #[error(transparent)]
-    AddressError(#[from] lettre::address::AddressError),
+    Address(#[from] lettre::address::AddressError),
     #[error(transparent)]
-    MessageBuilderError(#[from] lettre::error::Error),
+    MessageBuilder(#[from] lettre::error::Error),
     #[error(transparent)]
-    TransportError(anyhow::Error),
+    Transport(anyhow::Error),
 }
 
 #[derive(Debug, Clone)]
@@ -157,13 +158,6 @@ impl EmailBackend {
 
         Ok(())
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct StoredEmail {
-    pub to: String,
-    pub subject: String,
-    pub body: String,
 }
 
 #[cfg(test)]

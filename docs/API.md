@@ -16,7 +16,7 @@ The server does the following:
 
 The API routes are defined in _src/router.rs_.
 
-All of the `api_router` routes are mounted under the `/api/v1` path.
+All of the `api_router` routes are mounted under the `/v1` path.
 
 Each API route definition looks like this:
 
@@ -83,16 +83,62 @@ Integration tests are located in `src/tests` and contain tests from exercising r
 
 The [axum_test](https://docs.rs/axum-test/latest/axum_test/) crate is used to run a mock server.
 
+#### Insta
+
+Insta is a snapshot testing crate that allows you to create and update snapshots of your test outputs.
+
+```
+# Review and accept snapshots
+cargo insta review
+
+# Update all snapshots without review
+cargo insta accept
+
+# Reject pending snapshots
+cargo insta reject
+
+# Show snapshot status
+cargo insta status
+```
+
+Example snapshot test:
+```rust
+//src/tests/routes/auth/signin.rs
+#[tokio::test(flavor = "multi_thread")]
+async fn signin_existing_user() {
+    let (app, anon, user) = TestApp::init().with_user().await;
+
+    println!("Email: {}", &user.as_model().email);
+    let response = anon
+        .post("/v1/auth/signin")
+        .json(&json!({
+            "email": user.as_model().email
+        }))
+        .await;
+
+    response.assert_status_ok();
+    response.assert_json(&json!({
+        "message": "We've sent you an email"
+    }));
+
+    let emails = app.emails().await;
+
+    assert_eq!(emails.len(), 1);
+    assert_snapshot!(app.emails_snapshot().await);
+}
+```
+
 Example route test:
 
 ```rust
 // src/tests/routes/me/get.rs
 
 #[tokio::test(flavor = "multi_thread")]
-async fn me() {
+async fn me_failure() {
     let (_, anon, user) = TestApp::init().with_user().await;
 
-    let response = anon.get("/api/v1/me").expect_failure().await;
+    let response = anon.get("/v1/me").expect_failure().await;
+
     response.assert_status(StatusCode::FORBIDDEN);
     response.assert_json(&json!({
         "errors": [
@@ -100,17 +146,6 @@ async fn me() {
                 "detail": "Missing authorization header"
             }
         ]
-    }));
-
-    let response = user.get("/api/v1/me").await;
-    let user_model = user.as_model();
-
-    response.assert_status(StatusCode::OK);
-    response.assert_json(&json!({
-        "id": user_model.id,
-        "email": user_model.email,
-        "email_verified": user_model.email_verified,
-        "image": null,
     }));
 }
 ```
@@ -128,7 +163,7 @@ async fn test_with_matching_origin() {
         .with_user()
         .await;
 
-    let mut request = cookie.get_request("/api/v1/me");
+    let mut request = cookie.get_request("/v1/me");
     request.header("Origin", "https://learn.framer.university");
 
     let response = cookie.run::<()>(request).await;

@@ -7,7 +7,7 @@ use prometheus::proto::MetricFamily;
 use prometheus::TextEncoder;
 use tokio::task::spawn_blocking;
 
-/// Handles the `GET /api/private/metrics/{kind}` endpoint.
+/// Handles the `GET /private/metrics/{kind}` endpoint.
 pub async fn prometheus(
     state: AppState,
     req: Parts,

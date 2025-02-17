@@ -13,7 +13,6 @@ pub struct User {
     pub id: i64,
     pub email: String,
     pub email_verified: Option<NaiveDateTime>,
-    pub name: String,
     pub image: Option<String>,
     pub is_admin: bool,
     pub last_active_at: NaiveDateTime,
@@ -64,15 +63,13 @@ impl User {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewUser<'a> {
     pub email: &'a str,
-    pub name: &'a str,
     pub email_verified: Option<NaiveDateTime>,
 }
 
 impl<'a> NewUser<'a> {
-    pub fn new(name: &'a str, email: &'a str) -> Self {
+    pub fn new(email: &'a str) -> Self {
         NewUser {
             email,
-            name,
             email_verified: None,
         }
     }

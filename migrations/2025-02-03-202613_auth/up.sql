@@ -24,7 +24,6 @@ CREATE TABLE users (
     id bigserial primary key,
     email text NOT NULL UNIQUE COLLATE case_insensitive,
     email_verified timestamptz,
-    name text NOT NULL,
     image text,
     is_admin boolean NOT NULL DEFAULT false,
     last_active_at timestamptz NOT NULL DEFAULT now(),

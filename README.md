@@ -128,10 +128,10 @@ Date: Tue, 11 Feb 2025 17:23:23 -0000
 Hello someone! Welcome to Framer University. Please click the
 link below to verify your email address. Thank you!
 
-https://learn.framer.university/confirm/RiphVyFo31wuKQhpyTw7RF2LIf
+https://learn.framer.university/continue/RiphVyFo31wuKQhpyTw7RF2LIf
 ```
 
-When verifying the email, the prefix may need to be changed to the frontend host e.g. `http://localhost:8080/confirm/32i10234u0weth`.
+When verifying the email, the prefix may need to be changed to the frontend host e.g. `http://localhost:8080/continue/32i10234u0weth`.
 
 To start sending real emails, set the Mailgun environment variables in `.env` manually.
 

@@ -15,8 +15,8 @@ where
     async fn from_request(req: Request, state: &S) -> AppResult<Self> {
         let Json(data) = Json::<T>::from_request(req, state)
             .await
-            .map_err(|_| bad_request("Invalid JSON"))?;
-        data.validate().map_err(|_| bad_request("Invalid JSON"))?;
+            .map_err(|err| bad_request(format!("{err}")))?;
+        data.validate().map_err(|e| bad_request(format!("{e}")))?;
         Ok(JsonBody(data))
     }
 }

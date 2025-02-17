@@ -3,7 +3,7 @@ import { env } from "../../env.mjs"
 
 const fetchData = async () => {
   try {
-    const data = await fetch(`${env.NEXT_API_URL}/api/v1`)
+    const data = await fetch(`${env.NEXT_API_URL}/v1`)
     const json = await data.json()
     return json
   } catch (error) {

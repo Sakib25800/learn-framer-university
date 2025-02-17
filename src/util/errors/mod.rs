@@ -155,9 +155,9 @@ impl From<ValidationErrors> for BoxedAppError {
 impl From<EmailError> for BoxedAppError {
     fn from(error: EmailError) -> Self {
         match error {
-            EmailError::AddressError(error) => Box::new(error),
-            EmailError::MessageBuilderError(error) => Box::new(error),
-            EmailError::TransportError(error) => {
+            EmailError::Address(error) => Box::new(error),
+            EmailError::MessageBuilder(error) => Box::new(error),
+            EmailError::Transport(error) => {
                 error!(?error, "Failed to send email");
                 internal("Failed to send the email")
             }
