@@ -5,7 +5,7 @@ primary_region = 'lhr'
 dockerfile = 'frontend.Dockerfile'
 
 [build.args]
-API_URL = 'http://learn-framer-university-api.fly.dev'
+API_URL = 'https://api.learn.framer.university'
 
 [http_service]
 internal_port = 3000
