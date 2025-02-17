@@ -1,0 +1,13 @@
+---
+source: src/tests/routes/auth/signin.rs
+expression: app.emails_snapshot().await
+---
+To: new_user@example.com
+From: learn.framer.university <noreply@learn.framer.university>
+Subject: Framer University: Please confirm your email address
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+Hey there! Welcome to Framer University.
+Please click the link below to sign in: http://learn.framer.university/auth=
+/continue/[continue-token]

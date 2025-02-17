@@ -1,4 +1,16 @@
-use super::{MockAnonymousUser, MockAuthUser};
+use axum::body::Body;
+use axum::extract::{ConnectInfo, Request};
+use axum::middleware::Next;
+use axum_test::TestServer;
+use diesel::prelude::*;
+use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use framer_university_test_db::TestDatabase;
+use regex::Regex;
+use std::net::SocketAddr;
+use std::sync::LazyLock;
+use std::{rc::Rc, sync::Arc};
+
+use super::{MockAdminUser, MockAnonymousUser, MockAuthUser};
 use crate::app::App;
 use crate::auth::generate_tokens;
 use crate::email::Emails;
@@ -7,16 +19,6 @@ use crate::{
     config::{self, Env},
     schema::users,
 };
-use axum::body::Body;
-use axum::extract::{ConnectInfo, Request};
-use axum::middleware::Next;
-use axum_test::TestServer;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use framer_university_test_db::TestDatabase;
-use regex::Regex;
-use std::net::SocketAddr;
-use std::sync::LazyLock;
-use std::{rc::Rc, sync::Arc};
 
 struct TestAppInner {
     app: Arc<App>,
@@ -46,13 +48,12 @@ impl TestApp {
     /// Create a new user with a verified email address in the database
     /// (`<username>@example.com`) and return a mock user jwt.
     ///
-    /// This method updates the database directly
-    pub async fn db_new_user(&self, username: &str) -> MockAuthUser {
+    /// This method updates the database directly.
+    pub async fn db_new_user(&self, email: &str, is_admin: bool) -> MockAuthUser {
         let mut conn = self.db_conn().await;
-        let email = format!("{username}@example.com");
 
         let user = diesel::insert_into(users::table)
-            .values(crate::tests::new_user(username, &email))
+            .values(&((users::email.eq(email), users::is_admin.eq(is_admin))))
             .get_result(&mut conn)
             .await
             .unwrap();
@@ -66,13 +67,21 @@ impl TestApp {
         )
         .unwrap();
 
-        println!("{tokens:?}");
-
         MockAuthUser {
             app: self.clone(),
             user,
             tokens,
         }
+    }
+
+    /// Create a new admin with a verified email address in the database
+    /// (`<username>@example.com`) and return a mock admin jwt.
+    ///
+    /// This method updates the database directly.
+    pub async fn db_new_admin(&self, email: &str) -> MockAdminUser {
+        let MockAuthUser { app, user, tokens } = self.db_new_user(email, true).await;
+
+        MockAdminUser { app, user, tokens }
     }
 
     pub async fn emails(&self) -> Vec<String> {
@@ -87,8 +96,8 @@ impl TestApp {
         static DATE_TIME_REGEX: LazyLock<Regex> =
             LazyLock::new(|| Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z").unwrap());
 
-        static EMAIL_CONFIRM_REGEX: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r"/confirm/\w+").unwrap());
+        static EMAIL_CONTINUE_REGEX: LazyLock<Regex> =
+            LazyLock::new(|| Regex::new(r"/continue/[\w-]+(?:=\r?\n)?(?:[\w-]+)?").unwrap());
 
         static SEPARATOR: &str = "\n----------------------------------------\n\n";
 
@@ -98,19 +107,19 @@ impl TestApp {
             .map(|email| {
                 let email = EMAIL_HEADER_REGEX.replace_all(&email, "");
                 let email = DATE_TIME_REGEX.replace_all(&email, "[0000-00-00T00:00:00Z]");
-                let email = EMAIL_CONFIRM_REGEX.replace_all(&email, "/confirm/[confirm-token]");
+                let email = EMAIL_CONTINUE_REGEX.replace_all(&email, "/continue/[continue-token]");
                 email.to_string()
             })
             .collect::<Vec<_>>()
             .join(SEPARATOR)
     }
 
-    /// Obtain a reference to the inner `App` value
+    /// Obtain a reference to the inner `App` value.
     pub fn as_inner(&self) -> &App {
         &self.0.app
     }
 
-    /// Obtain a reference to the test server
+    /// Obtain a reference to the test server.
     pub fn server(&self) -> &TestServer {
         &self.0.server
     }
@@ -146,8 +155,16 @@ impl TestAppBuilder {
     /// Create a `TestApp` with a database including a default user
     pub async fn with_user(self) -> (TestApp, MockAnonymousUser, MockAuthUser) {
         let (app, anon) = self.empty().await;
-        let user = app.db_new_user("foo").await;
+        let user = app.db_new_user("test@example.com", false).await;
         (app, anon, user)
+    }
+
+    /// Create a `TestApp` with a database including a default admin user
+    pub async fn with_admin(self) -> (TestApp, MockAuthUser, MockAdminUser) {
+        let (app, ..) = self.empty().await;
+        let user = app.db_new_user("user", false).await;
+        let admin = app.db_new_admin("admin").await;
+        (app, user, admin)
     }
 }
 
@@ -164,10 +181,7 @@ fn simple_config() -> config::Server {
         email_verification_expiration_hours: 24,
         connection_timeout_seconds: 1,
         pool_size: 5,
-        mailgun_smtp_login: "test_login".to_string(),
-        mailgun_smtp_password: "test_password".to_string(),
-        mailgun_smtp_server: "test_domain".to_string(),
-        domain_name: "test_domain".to_string(),
+        domain_name: "learn.framer.university".to_string(),
         // This value is to be overridden by the
         // `TestAppBuilder::empty()` fn.
         database_url: "empty".to_string(),
