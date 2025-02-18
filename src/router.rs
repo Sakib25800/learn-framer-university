@@ -3,9 +3,10 @@ use crate::util::errors::not_found;
 use crate::{app::AppState, openapi::BaseOpenApi};
 use axum::response::IntoResponse;
 use axum::routing::get;
-use axum::{middleware, Json, Router};
+use axum::{middleware, Router};
 use http::{Method, StatusCode};
 use utoipa_axum::routes;
+use utoipa_swagger_ui::SwaggerUi;
 
 pub fn build_axum_router(state: AppState) -> Router<()> {
     let (public_router, public_openapi) = BaseOpenApi::router()
@@ -26,7 +27,8 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
         .merge(public_router)
         .merge(protected_router)
         .route("/private/metrics/{kind}", get(metrics::prometheus))
-        .route("/openapi.json", get(|| async { Json(openapi) }))
+        .merge(SwaggerUi::new("/private/swagger-ui").url("/private/openapi.json", openapi.clone()))
+        // .route("/private/openapi.json", get(|| async { Json(openapi) }))
         .fallback(|method: Method| async move {
             match method {
                 Method::HEAD => StatusCode::NOT_FOUND.into_response(),
