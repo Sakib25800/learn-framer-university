@@ -2,7 +2,7 @@ pub mod test_app;
 
 use crate::{auth::Tokens, models::user::User};
 use axum_test::{TestRequest, TestServer};
-use test_app::TestApp;
+pub use test_app::TestApp;
 
 /// A collection of helper methods for the three authentication types
 /// - Anonymous

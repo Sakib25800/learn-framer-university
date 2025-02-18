@@ -39,7 +39,7 @@ async fn signin_should_succeed_with_valid_email() {
             assert!(map.contains_key("access_token"));
             assert!(map.contains_key("refresh_token"));
         }
-        _ => panic!("Response is not a JSON object"),
+        _ => panic!("Expected JSON object"),
     }
 }
 
