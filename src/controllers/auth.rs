@@ -1,4 +1,3 @@
-use crate::middleware::path::ValidatedPath;
 use axum::Json;
 use chrono::Utc;
 use utoipa::ToSchema;
@@ -7,13 +6,13 @@ use validator::Validate;
 use crate::{
     app::AppState,
     auth::generate_tokens,
-    middleware::json::JsonBody,
+    middleware::{json::JsonBody, path::ValidatedPath},
     models::{
         user::{NewUser, User},
         verification_token::{NewVerificationToken, VerificationToken},
     },
     util::errors::{auth, AppResult},
-    views::{SuccessResponse, VerifiedEmailResponse},
+    views::{MessageResponse, VerifiedEmailResponse},
 };
 
 #[derive(Deserialize, Validate, ToSchema)]
@@ -34,12 +33,12 @@ pub struct VerifyEmailQueryParams {
     path = "/v1/auth/signin",
     tag = "auth",
     request_body = AuthSignInBody,
-    responses((status = 200, description = "Successful Response")),
+    responses((status = OK, body = MessageResponse))
 )]
 pub async fn signin(
     state: AppState,
     JsonBody(body): JsonBody<AuthSignInBody>,
-) -> AppResult<Json<SuccessResponse<()>>> {
+) -> AppResult<Json<MessageResponse>> {
     let mut conn = state.database.get().await?;
     let email = &body.email;
 
@@ -66,9 +65,8 @@ pub async fn signin(
 
     state.emails.send(&body.email, signin_email).await?;
 
-    Ok(Json(SuccessResponse {
+    Ok(Json(MessageResponse {
         message: "We've sent you an email".to_owned(),
-        data: None,
     }))
 }
 
@@ -85,7 +83,8 @@ pub struct AuthSignInParams {
     params(
         ("email_token" = String, Path, description = "Token used to verify email")
     ),
-    tag = "auth"
+    responses((status = OK, body = VerifiedEmailResponse)),
+    tag = "auth",
 )]
 pub async fn continue_signin(
     state: AppState,

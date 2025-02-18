@@ -1,7 +1,8 @@
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, ToSchema)]
 pub struct Me {
     pub id: i64,
     pub email: String,
@@ -9,15 +10,18 @@ pub struct Me {
     pub image: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, ToSchema)]
 pub struct VerifiedEmailResponse {
     pub access_token: String,
     pub refresh_token: String,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SuccessResponse<T> {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub data: Option<T>,
+#[derive(Serialize, Deserialize, Debug, ToSchema)]
+pub struct MessageResponse {
     pub message: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, ToSchema)]
+pub struct DataResponse<T> {
+    pub data: T,
 }
