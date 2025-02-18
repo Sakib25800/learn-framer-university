@@ -56,7 +56,6 @@ jobs:
             playwright.config.ts
             postcss.config.mjs
             prettier.config.js
-            tailwind.config.ts
             tsconfig.json
 
       - uses: tj-actions/changed-files@v45
