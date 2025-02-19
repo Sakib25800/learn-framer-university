@@ -1,15 +1,22 @@
+use colored::*;
 use std::error::Error;
 use std::fs;
 use tokio;
 
-// Feels hacky, maybe improve this
+// Hacky, need to improve this
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let response = reqwest::get("http://localhost:8080/private/openapi.json").await?;
+    let response = reqwest::get("http://localhost:8080/private/openapi.json")
+        .await
+        .expect("Server is not running");
     let body = response.text().await?;
 
-    fs::write("shared/openapi.json", body)?;
+    fs::write("shared/api/openapi.json", body)?;
 
-    println!("OpenAPI spec saved successfully.");
+    println!(
+        "{}",
+        "🚀 openapi spec generated -> ./shared/api/openapi.json".green()
+    );
+
     Ok(())
 }

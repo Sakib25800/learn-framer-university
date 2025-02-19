@@ -14,7 +14,7 @@ use crate::{
     app::AppState,
     auth::generate_access_token,
     middleware::{json::JsonBody, path::ValidatedPath},
-    util::errors::{auth, AppResult},
+    util::errors::{auth, AppResult, ErrorResponse},
     views::{MessageResponse, VerifiedEmailResponse},
 };
 
@@ -36,7 +36,7 @@ pub struct VerifyEmailQueryParams {
     path = "/v1/auth/signin",
     tag = "auth",
     request_body = AuthSignInBody,
-    responses((status = OK, body = MessageResponse))
+    responses((status = OK, body = MessageResponse, description = "successful operation"))
 )]
 pub async fn signin(
     state: AppState,
@@ -86,7 +86,11 @@ pub struct AuthSignInParams {
     params(
         ("email_token" = String, Path, description = "Token used to verify email")
     ),
-    responses((status = OK, body = VerifiedEmailResponse)),
+    responses(
+        (status = OK, body = VerifiedEmailResponse, description = "successful operation"),
+        (status = 400, body = ErrorResponse, description = "Invalid verification token"),
+        (status = 400, body = ErrorResponse, description = "Verification token has expired")
+    ),
     tag = "auth",
 )]
 pub async fn continue_signin(

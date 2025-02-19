@@ -1,14 +1,13 @@
-use std::fs;
-
-use crate::controllers::*;
-use crate::util::errors::not_found;
-use crate::{app::AppState, openapi::BaseOpenApi};
 use axum::response::IntoResponse;
 use axum::routing::get;
 use axum::{middleware, Router};
 use http::{Method, StatusCode};
 use utoipa_axum::routes;
 use utoipa_swagger_ui::SwaggerUi;
+
+use crate::controllers::*;
+use crate::util::errors::not_found;
+use crate::{app::AppState, openapi::BaseOpenApi};
 
 pub fn build_axum_router(state: AppState) -> Router<()> {
     let (public_router, public_openapi) = BaseOpenApi::router()
@@ -24,9 +23,6 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
     ));
 
     let openapi = public_openapi.merge_from(protected_openapi);
-
-    let json = serde_json::to_string_pretty(&openapi).unwrap();
-    fs::write("shared/openapi.json", json).unwrap();
 
     Router::new()
         .merge(public_router)

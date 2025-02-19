@@ -52,9 +52,9 @@ async fn signin_should_reject_with_invalid_token() {
 
     response.assert_status_unauthorized();
     response.assert_json(&json!({
-        "errors": [{
-            "detail": "Invalid verification token"
-        }]
+        "title": "Unauthorized",
+        "detail": "Invalid verification token",
+        "status": 401
     }));
 }
 

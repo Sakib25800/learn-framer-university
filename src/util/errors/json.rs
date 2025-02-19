@@ -6,10 +6,11 @@ use http::StatusCode;
 use serde::Serialize;
 use serde_json::json;
 use std::{borrow::Cow, fmt};
+use utoipa::ToSchema;
 
 use super::{AppError, BoxedAppError};
 
-#[derive(Serialize)]
+#[derive(Serialize, ToSchema)]
 pub struct ErrorResponse {
     title: String,
     status: u16,

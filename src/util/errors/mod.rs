@@ -7,7 +7,6 @@
 use axum::{response::IntoResponse, Extension};
 use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use http::StatusCode;
-use json::custom;
 use std::{
     any::{Any, TypeId},
     borrow::Cow,
@@ -19,6 +18,7 @@ use tracing::*;
 use validator::ValidationErrors;
 
 use crate::{email::EmailError, middleware::log_request::ErrorField};
+pub use json::{custom, ErrorResponse};
 
 mod json;
 

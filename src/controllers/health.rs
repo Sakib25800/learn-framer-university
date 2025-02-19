@@ -6,7 +6,9 @@ use crate::{util::errors::AppResult, views::MessageResponse};
 #[utoipa::path(
     get,
     path = "/v1",
-    responses((status = 200, body = MessageResponse)),
+    responses(
+        (status = 200, body = MessageResponse, description = "successful operation"),
+    ),
 )]
 pub async fn health_check() -> AppResult<Json<MessageResponse>> {
     Ok(Json(MessageResponse {

@@ -42,6 +42,24 @@ These files have to do with the frontend:
   development and deployment
 - `public/` - Static files that are merged into `dist/` during build
 
+## Shared
+
+- `shared/` - Shared code between the frontend and backend
+
+If changes are made to the API, then run the following to ensure type safety.
+
+To generate the `shared/api/openapi.json` file, run the following command:
+
+```
+cargo run --bin gen_openapi
+```
+
+To generate the `shared/api/v1.d.ts` file for API type definitions, run the following command:
+
+```
+npx openapi-typescript ./shared/api/openapi.json -o ./shared/api/v1.d.ts
+```
+
 ## Deployment - Fly.io
 
 learn.framer.university is deployed on [Fly](https://fly.io/).

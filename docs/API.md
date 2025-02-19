@@ -125,11 +125,9 @@ async fn me_failure() {
 
     response.assert_status(StatusCode::FORBIDDEN);
     response.assert_json(&json!({
-        "errors": [
-            {
-                "detail": "Missing authorization header"
-            }
-        ]
+        "title": "Forbidden",
+        "detail": "Missing authorization header",
+        "status": 403
     }));
 }
 ```
