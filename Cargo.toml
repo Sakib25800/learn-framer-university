@@ -86,6 +86,7 @@ regex = "1.11.1"
 insta = { version = "1.42.1", features = ["glob", "json", "redactions"] }
 utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
 lfu_database = { path = "crates/lfu_database" }
+reqwest = "0.12.12"
 
 [dev-dependencies]
 bytes = "1.9.0"

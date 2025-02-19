@@ -1,3 +1,5 @@
+use std::fs;
+
 use crate::controllers::*;
 use crate::util::errors::not_found;
 use crate::{app::AppState, openapi::BaseOpenApi};
@@ -22,6 +24,9 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
     ));
 
     let openapi = public_openapi.merge_from(protected_openapi);
+
+    let json = serde_json::to_string_pretty(&openapi).unwrap();
+    fs::write("shared/openapi.json", json).unwrap();
 
     Router::new()
         .merge(public_router)

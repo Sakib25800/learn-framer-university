@@ -55,7 +55,7 @@ mod tests {
     async fn test_openapi_snapshot() {
         let (_app, anon) = TestApp::init().empty().await;
 
-        let response = anon.get("/openapi.json").await;
+        let response = anon.get("/private/openapi.json").await;
 
         response.assert_status_ok();
 
