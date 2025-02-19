@@ -1,13 +1,12 @@
 use crate::schema::accounts;
+use bon::Builder;
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use diesel_derive_enum::DbEnum;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Queryable, Identifiable, Selectable, AsChangeset)]
-#[diesel(table_name = accounts)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+/// The model representing a row in the `accounts` database table.
+#[derive(Clone, Debug, Queryable, Identifiable, Selectable)]
 pub struct Account {
     pub id: i64,
     pub user_id: i64,
@@ -24,22 +23,14 @@ pub struct Account {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, DbEnum, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, diesel_derive_enum::DbEnum)]
 #[ExistingTypePath = "crate::schema::sql_types::AuthMethodEnum"]
 pub enum AuthMethod {
-    #[db_rename = "oauth"]
-    OAuth,
     #[default]
     #[db_rename = "email"]
     Email,
-    #[db_rename = "credentials"]
-    Credentials,
-    #[allow(clippy::upper_case_acronyms)]
-    #[db_rename = "oidc"]
-    OIDC,
-    #[allow(clippy::upper_case_acronyms)]
-    #[db_rename = "sms"]
-    SMS,
+    #[db_rename = "oauth"]
+    OAuth,
 }
 
 impl Account {
@@ -48,9 +39,8 @@ impl Account {
     }
 }
 
-#[derive(Insertable, Debug)]
-#[diesel(table_name = accounts)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+#[derive(Insertable, Debug, Builder)]
+#[diesel(table_name = accounts, check_for_backend(diesel::pg::Pg))]
 pub struct NewAccount<'a> {
     pub user_id: i64,
     pub auth_method: AuthMethod,

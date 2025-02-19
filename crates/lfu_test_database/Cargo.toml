@@ -1,5 +1,5 @@
 [package]
-name = "framer_university_test_db"
+name = "lfu_test_database"
 version = "0.0.0"
 edition = "2021"
 

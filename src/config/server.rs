@@ -1,6 +1,8 @@
 use config::{Config, Environment};
 use http::HeaderValue;
 
+use crate::Env;
+
 #[derive(serde::Deserialize)]
 pub struct Server {
     // Server
@@ -19,19 +21,6 @@ pub struct Server {
     pub pool_size: usize,
     // Other
     pub domain_name: String,
-}
-
-/// Used for setting different values depending on whether the app is being run in production,
-/// in development, or for testing.
-///
-/// The app's `config.env` value is set to `Production` if the environment variable
-/// `FLY_APP_NAME` is set and `Development` otherwise. `config.env` is set to `Test`
-/// unconditionally in *src/test/all.rs*.
-#[derive(PartialEq, Eq, Clone, Copy, Debug, serde::Deserialize)]
-pub enum Env {
-    Development,
-    Test,
-    Production,
 }
 
 impl Server {

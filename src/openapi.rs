@@ -14,6 +14,7 @@ use utoipa_axum::router::OpenApiRouter;
     servers(
         (url = "https://learn.framer.university"),
         (url = "https://staging.learn.framer.university"),
+        (url = "http://localhost:8080"),
     ),
 )]
 pub struct BaseOpenApi;
@@ -24,6 +25,10 @@ impl BaseOpenApi {
         S: Send + Sync + Clone + 'static,
     {
         OpenApiRouter::with_openapi(Self::openapi())
+    }
+
+    pub fn openapi() -> utoipa::openapi::OpenApi {
+        <Self as OpenApi>::openapi()
     }
 }
 
@@ -44,7 +49,7 @@ impl Modify for SecurityAddon {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::util::{RequestHelper, TestApp};
+    use crate::tests::util::{test_app::TestApp, RequestHelper};
 
     #[tokio::test(flavor = "multi_thread")]
     async fn test_openapi_snapshot() {

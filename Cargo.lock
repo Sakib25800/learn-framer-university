@@ -323,6 +323,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "bon"
+version = "3.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fe7acc34ff59877422326db7d6f2d845a582b16396b6b08194942bf34c6528ab"
+dependencies = [
+ "bon-macros",
+ "rustversion",
+]
+
+[[package]]
+name = "bon-macros"
+version = "3.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4159dd617a7fbc9be6a692fe69dc2954f8e6bb6bb5e4d7578467441390d77fd0"
+dependencies = [
+ "darling",
+ "ident_case",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "rustversion",
+ "syn",
+]
+
+[[package]]
 name = "brotli"
 version = "7.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -936,21 +961,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "framer_university_test_db"
-version = "0.0.0"
-dependencies = [
- "diesel",
- "diesel-async",
- "diesel_migrations",
- "dotenvy",
- "env-var",
- "log",
- "rand 0.9.0",
- "tracing",
- "url",
-]
-
-[[package]]
 name = "futures-channel"
 version = "0.3.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1560,12 +1570,13 @@ dependencies = [
  "diesel_migrations",
  "dotenvy",
  "env-var",
- "framer_university_test_db",
  "http",
  "insta",
  "json-subscriber",
  "jsonwebtoken",
  "lettre",
+ "lfu_database",
+ "lfu_test_database",
  "log",
  "metrics",
  "parking_lot",
@@ -1586,7 +1597,6 @@ dependencies = [
  "utoipa",
  "utoipa-axum",
  "utoipa-swagger-ui",
- "uuid",
  "validator",
 ]
 
@@ -1617,6 +1627,33 @@ dependencies = [
  "tokio-native-tls",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "lfu_database"
+version = "0.0.0"
+dependencies = [
+ "bon",
+ "chrono",
+ "diesel",
+ "diesel-async",
+ "diesel-derive-enum",
+ "serde",
+]
+
+[[package]]
+name = "lfu_test_database"
+version = "0.0.0"
+dependencies = [
+ "diesel",
+ "diesel-async",
+ "diesel_migrations",
+ "dotenvy",
+ "env-var",
+ "log",
+ "rand 0.9.0",
+ "tracing",
+ "url",
 ]
 
 [[package]]
@@ -2162,6 +2199,16 @@ checksum = "3ae130e2f271fbc2ac3a40fb1d07180839cdbbe443c7a27e1e3c13c5cac0116d"
 dependencies = [
  "diff",
  "yansi",
+]
+
+[[package]]
+name = "prettyplease"
+version = "0.2.29"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6924ced06e1f7dfe3fa48d57b9f74f55d8915f5036121bef647ef4b204895fac"
+dependencies = [
+ "proc-macro2",
+ "syn",
 ]
 
 [[package]]

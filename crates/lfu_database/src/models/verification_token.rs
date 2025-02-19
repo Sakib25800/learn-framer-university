@@ -1,12 +1,12 @@
 use crate::schema::verification_tokens;
+use bon::Builder;
 use chrono::{DateTime, Utc};
 use diesel::prelude::*;
 use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable, AsChangeset)]
-#[diesel(table_name = verification_tokens)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+/// The model representing a row in the `verification_tokens` database table.
+#[derive(Clone, Debug, Queryable, Identifiable, Selectable)]
+#[diesel(primary_key(identifier, token))]
 pub struct VerificationToken {
     pub identifier: String,
     pub token: String,
@@ -45,23 +45,20 @@ impl VerificationToken {
     }
 }
 
-#[derive(Insertable, Debug)]
-#[diesel(table_name = verification_tokens)]
-#[diesel(check_for_backend(diesel::pg::Pg))]
+/// Represents a new verification token to be inserted into the database.
+#[derive(Insertable, Debug, Builder)]
+#[diesel(table_name = verification_tokens, check_for_backend(diesel::pg::Pg))]
 pub struct NewVerificationToken {
     pub identifier: String,
-    pub token: String,
     pub expires: chrono::NaiveDateTime,
 }
 
 impl NewVerificationToken {
     pub fn new(identifier: String, expires_in_hours: i64) -> Self {
-        let token = uuid::Uuid::new_v4().to_string();
         let expires = Utc::now().naive_utc() + chrono::Duration::hours(expires_in_hours);
 
         Self {
             identifier,
-            token,
             expires,
         }
     }

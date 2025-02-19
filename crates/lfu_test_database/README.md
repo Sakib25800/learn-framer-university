@@ -1,4 +1,4 @@
-# framer_university_test_db
+# lfu_test_database
 
 This package contains the code necessary to create test databases for testing
 purposes.

@@ -2,22 +2,26 @@ use axum::body::Body;
 use axum::extract::{ConnectInfo, Request};
 use axum::middleware::Next;
 use axum_test::TestServer;
-use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
-use framer_university_test_db::TestDatabase;
+use diesel_async::AsyncPgConnection;
 use regex::Regex;
 use std::net::SocketAddr;
 use std::sync::LazyLock;
 use std::{rc::Rc, sync::Arc};
 
+use lfu_database::models::{
+    refresh_token::NewRefreshToken,
+    user::{NewUser, User},
+};
+use lfu_test_database::TestDatabase;
+
 use super::{MockAdminUser, MockAnonymousUser, MockAuthUser};
 use crate::app::App;
-use crate::auth::generate_tokens;
+use crate::auth::{generate_access_token, Tokens};
 use crate::email::Emails;
+use crate::Env;
 use crate::{
     build_handler,
-    config::{self, Env},
-    schema::users,
+    config::{self},
 };
 
 struct TestAppInner {
@@ -52,25 +56,34 @@ impl TestApp {
     pub async fn db_new_user(&self, email: &str, is_admin: bool) -> MockAuthUser {
         let mut conn = self.db_conn().await;
 
-        let user = diesel::insert_into(users::table)
-            .values(&((users::email.eq(email), users::is_admin.eq(is_admin))))
-            .get_result(&mut conn)
+        let user = NewUser::new(email, is_admin)
+            .insert(&mut conn)
             .await
             .unwrap();
 
+        User::verify_email(user.id, &mut conn).await.unwrap();
+
         let config = &self.0.app.config;
-        let tokens = generate_tokens(
-            &config.jwt_secret,
-            config.jwt_access_token_expiration_hours,
-            config.jwt_refresh_token_expiration_days,
-            &user,
-        )
-        .unwrap();
+        let config::Server {
+            jwt_secret,
+            jwt_access_token_expiration_hours,
+            jwt_refresh_token_expiration_days,
+            ..
+        } = config.as_ref();
+        let access_token =
+            generate_access_token(jwt_secret, jwt_access_token_expiration_hours, &user).unwrap();
+        let refresh_token = NewRefreshToken::new(user.id, *jwt_refresh_token_expiration_days)
+            .insert(&mut conn)
+            .await
+            .unwrap();
 
         MockAuthUser {
             app: self.clone(),
             user,
-            tokens,
+            tokens: Tokens {
+                access_token,
+                refresh_token: refresh_token.token,
+            },
         }
     }
 

@@ -1,5 +1,5 @@
 use crate::app::AppState;
-use crate::config::Env;
+use crate::Env;
 use ::sentry::integrations::tower as sentry_tower;
 use axum::middleware::{from_fn, from_fn_with_state};
 use axum::Router;

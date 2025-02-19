@@ -5,18 +5,22 @@ edition = "2021"
 authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
 repository = "https://github.com/sakib25800/learn-framer-university"
 description = "Backend of learn.framer.university"
+default-run = "server"
 
 [workspace]
 members = ["crates/*"]
 
 [package.metadata.cargo-machete]
-ignored = ["log"]
+ignored = ["log", "diesel-derive-enum"]
 
 [workspace.metadata.cargo-machete]
-ignored = ["log"]
+ignored = ["log", "diesel-derive-enum"]
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"
+
+[lib]
+name = "learn_framer_university"
 
 [lints]
 workspace = true
@@ -32,6 +36,10 @@ panic = 'unwind'
 incremental = true
 codegen-units = 256
 rpath = false
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
 
 [profile.release]
 opt-level = 2
@@ -65,7 +73,6 @@ diesel = { version = "2.2.7", features = ["postgres", "serde_json", "chrono", "n
 diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "deadpool", "postgres"] }
 diesel_migrations = { version = "=2.2.0", features = ["postgres"] }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
-uuid = { version = "1.12.1", features = ["v4"] }
 axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
 parking_lot = "0.12.3"
 serde_urlencoded = "0.7.1"
@@ -78,7 +85,8 @@ thiserror = "2.0.11"
 regex = "1.11.1"
 insta = { version = "1.42.1", features = ["glob", "json", "redactions"] }
 utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
+lfu_database = { path = "crates/lfu_database" }
 
 [dev-dependencies]
 bytes = "1.9.0"
-framer_university_test_db = { path = "crates/framer_university_test_db" }
+lfu_test_database = { path = "crates/lfu_test_database" }

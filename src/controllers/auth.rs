@@ -1,16 +1,19 @@
 use axum::Json;
 use chrono::Utc;
+use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
+use lfu_database::models::{
+    refresh_token::NewRefreshToken,
+    user::{NewUser, User},
+    verification_token::{NewVerificationToken, VerificationToken},
+};
+
 use crate::{
     app::AppState,
-    auth::generate_tokens,
+    auth::generate_access_token,
     middleware::{json::JsonBody, path::ValidatedPath},
-    models::{
-        user::{NewUser, User},
-        verification_token::{NewVerificationToken, VerificationToken},
-    },
     util::errors::{auth, AppResult},
     views::{MessageResponse, VerifiedEmailResponse},
 };
@@ -48,7 +51,7 @@ pub async fn signin(
             VerificationToken::delete_all(&user.email, &mut conn).await?;
             user
         }
-        Err(_) => NewUser::new(&body.email).create(&mut conn).await?,
+        Err(_) => NewUser::new(&body.email, false).insert(&mut conn).await?,
     };
 
     let verification_token = NewVerificationToken::new(
@@ -107,12 +110,16 @@ pub async fn continue_signin(
         Err(_) => return Err(auth("Email does not exist")),
     };
 
-    let tokens = generate_tokens(
-        &state.config.jwt_secret,
-        state.config.jwt_access_token_expiration_hours,
-        state.config.jwt_refresh_token_expiration_days,
-        &user,
-    )?;
+    let crate::config::Server {
+        jwt_secret,
+        jwt_access_token_expiration_hours,
+        jwt_refresh_token_expiration_days,
+        ..
+    } = state.config.as_ref();
+    let access_token = generate_access_token(jwt_secret, jwt_access_token_expiration_hours, &user)?;
+    let refresh_token = NewRefreshToken::new(user.id, *jwt_refresh_token_expiration_days)
+        .insert(&mut conn)
+        .await?;
 
     // Set user email as verified
     User::verify_email(user.id, &mut conn).await?;
@@ -121,8 +128,8 @@ pub async fn continue_signin(
     VerificationToken::delete(&verification_token.identifier, token.as_str(), &mut conn).await?;
 
     Ok(Json(VerifiedEmailResponse {
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        access_token,
+        refresh_token: refresh_token.token,
     }))
 }
 

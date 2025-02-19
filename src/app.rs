@@ -1,8 +1,5 @@
 //! Application-wide components in a struct accessible from each request
 
-use crate::config::{self, Env};
-use crate::email::Emails;
-use crate::metrics::{InstanceMetrics, ServiceMetrics};
 use axum::extract::{FromRequestParts, State};
 use deadpool_diesel::Runtime;
 use derive_more::Deref;
@@ -14,6 +11,11 @@ use diesel_async::AsyncPgConnection;
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use std::sync::Arc;
 use std::time::Duration;
+
+use crate::config::{self};
+use crate::email::Emails;
+use crate::metrics::{InstanceMetrics, ServiceMetrics};
+use crate::Env;
 
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 

@@ -1,47 +1,20 @@
-//! This crate implements the backend server for <https://learn.framer.university/>
-
-#[macro_use]
-extern crate serde;
-#[macro_use]
-extern crate tracing;
-
-use app::{App, AppState};
-use email::Emails;
-use router::build_axum_router;
+use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
-use tracing::info_span;
-
-use std::net::SocketAddr;
 use tokio::signal::unix::{signal, SignalKind};
+use tracing::*;
 
-mod app;
-mod auth;
-mod config;
-mod controllers;
-mod email;
-mod headers;
-mod metrics;
-mod middleware;
-mod models;
-mod openapi;
-mod router;
-mod schema;
-mod sentry;
-#[cfg(test)]
-pub mod tests;
-mod util;
-mod views;
+use learn_framer_university::{app::App, build_handler, email::Emails};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let _sentry = crate::sentry::init();
+    let _sentry = learn_framer_university::sentry::init();
 
-    crate::util::tracing::init();
+    learn_framer_university::util::tracing::init();
 
     info_span!("server.run");
 
-    let config = crate::config::Server::from_environment()?;
+    let config = learn_framer_university::config::Server::from_environment()?;
 
     let emails = Emails::from_environment(&config);
 
@@ -64,15 +37,8 @@ async fn main() -> anyhow::Result<()> {
         .unwrap();
 
     info!("Server has gracefully shutdown!");
+
     Ok(())
-}
-
-/// Configures routes, sessions, logging, and other middleware.
-pub fn build_handler(app: Arc<App>) -> axum::Router {
-    let state = AppState(app);
-    let axum_router = build_axum_router(state.clone());
-
-    middleware::apply_axum_middleware(state, axum_router)
 }
 
 async fn shutdown_signal() {

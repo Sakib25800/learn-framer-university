@@ -4,18 +4,18 @@
 //!   is more dynamic is box allocated. Low-level errors are typically not converted to user facing errors and most usage
 //!   lies within models, controllers, and middleware layers.
 
+use axum::{response::IntoResponse, Extension};
+use diesel::result::{DatabaseErrorKind, Error as DieselError};
+use http::StatusCode;
+use json::custom;
 use std::{
     any::{Any, TypeId},
     borrow::Cow,
     error::Error,
     fmt,
 };
-
-use axum::{response::IntoResponse, Extension};
-use diesel::result::{DatabaseErrorKind, Error as DieselError};
-use http::StatusCode;
-use json::custom;
 use tokio::task::JoinError;
+use tracing::*;
 use validator::ValidationErrors;
 
 use crate::{email::EmailError, middleware::log_request::ErrorField};
@@ -213,7 +213,7 @@ mod tests {
 
     #[test]
     fn http_error_responses() {
-        use crate::serde::de::Error;
+        use serde::de::Error;
 
         // Types for handling common error status codes
         assert_eq!(bad_request("").response().status(), StatusCode::BAD_REQUEST);

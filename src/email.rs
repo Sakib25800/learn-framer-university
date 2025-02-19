@@ -9,7 +9,8 @@ use lettre::{Address, AsyncTransport, Message, Tokio1Executor};
 use rand::distr::{Alphanumeric, SampleString};
 use std::sync::Arc;
 
-use crate::config::{self, Env};
+use crate::config::{self};
+use crate::Env;
 
 pub trait Email {
     fn subject(&self) -> String;
