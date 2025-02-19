@@ -1,6 +1,7 @@
 use colored::*;
 use std::error::Error;
 use std::fs;
+use std::process::Command;
 use tokio;
 
 // Hacky, need to improve this
@@ -15,8 +16,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!(
         "{}",
-        "🚀 openapi spec generated -> ./shared/api/openapi.json".green()
+        "🔧 openapi spec generated -> ./shared/api/openapi.json".green()
     );
+
+    let status = Command::new("npx")
+        .args([
+            "openapi-typescript",
+            "./shared/api/openapi.json",
+            "-o",
+            "./shared/api/v1.d.ts",
+        ])
+        .status()
+        .expect("Failed to execute npx command");
+
+    if !status.success() {
+        println!("{}", "Failed to generate TypeScript definitions".red());
+    }
 
     Ok(())
 }
