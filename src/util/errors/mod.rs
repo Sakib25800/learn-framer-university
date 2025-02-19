@@ -25,24 +25,28 @@ mod json;
 pub type BoxedAppError = Box<dyn AppError>;
 
 pub fn bad_request(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::BAD_REQUEST, detail)
+    custom("Invalid request", StatusCode::BAD_REQUEST, detail)
 }
 
 pub fn forbidden(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::FORBIDDEN, detail)
+    custom("Forbidden", StatusCode::FORBIDDEN, detail)
 }
 
 pub fn auth(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::UNAUTHORIZED, detail)
+    custom("Unauthorized", StatusCode::UNAUTHORIZED, detail)
 }
 
 pub fn not_found(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::NOT_FOUND, detail)
+    custom("Not found", StatusCode::NOT_FOUND, detail)
 }
 
 /// Returns an error with status 503 and the provided description as JSON
 pub fn service_unavailable() -> BoxedAppError {
-    custom(StatusCode::SERVICE_UNAVAILABLE, "Service unavailable")
+    custom(
+        "Service unavailable",
+        StatusCode::SERVICE_UNAVAILABLE,
+        "Service unavailable",
+    )
 }
 
 // =============================================================================
@@ -51,7 +55,7 @@ pub fn service_unavailable() -> BoxedAppError {
 pub trait AppError: Send + fmt::Display + fmt::Debug + 'static {
     /// Generate an HTTP response for the error
     ///
-    /// If none is returned, the error will bublbe up the middleware stack
+    /// If none is returned, the error will bubble up the middleware stack
     /// where it is eventually logged and a status 500.
     fn response(&self) -> axum::response::Response;
 
