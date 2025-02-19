@@ -11,8 +11,8 @@ use crate::{
     path = "/v1/users/me",
     tag = "users",
     responses(
-        (status = OK, body = Me, description = "successful operation"),
-        (status = UNAUTHORIZED, body = AppErrorResponse, description = "unauthorized")
+        (status = 200, body = Me, description = "successful operation"),
+        (status = 400, body = AppErrorResponse, description = "unauthorized")
     )
 )]
 pub async fn me(Extension(user): Extension<User>) -> AppResult<Json<Me>> {

@@ -20,6 +20,7 @@ pub struct Server {
     pub connection_timeout_seconds: u64,
     pub pool_size: usize,
     // Other
+    pub app_url: String,
     pub domain_name: String,
 }
 
@@ -35,7 +36,7 @@ impl Server {
         let builder = Config::builder()
             .add_source(Environment::default())
             .set_default("env", env)?
-            .set_default("domain_name", "learn.framer.university")?;
+            .set_default("domain_name", "https://learn.framer.university")?;
 
         Ok(builder.build()?.try_deserialize()?)
     }

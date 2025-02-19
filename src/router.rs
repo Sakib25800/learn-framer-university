@@ -12,7 +12,8 @@ use crate::{app::AppState, openapi::BaseOpenApi};
 pub fn build_axum_router(state: AppState) -> Router<()> {
     let (public_router, public_openapi) = BaseOpenApi::router()
         .routes(routes!(health::health_check))
-        .routes(routes!(auth::signin, auth::continue_signin))
+        .routes(routes!(auth::signin))
+        .routes(routes!(auth::continue_signin))
         .split_for_parts();
 
     let (protected_router, protected_openapi) = BaseOpenApi::router()

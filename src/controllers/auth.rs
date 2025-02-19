@@ -36,7 +36,10 @@ pub struct VerifyEmailQueryParams {
     path = "/v1/auth/signin",
     tag = "auth",
     request_body = AuthSignInBody,
-    responses((status = OK, body = MessageResponse, description = "successful operation"))
+    responses(
+        (status = 200, body = MessageResponse, description = "successful operation"),
+        (status = 400, body = AppErrorResponse, description = "failed operation"),
+    ),
 )]
 pub async fn signin(
     state: AppState,
@@ -62,7 +65,7 @@ pub async fn signin(
     .await?;
 
     let signin_email = AuthSignInEmail {
-        domain: &state.config.domain_name,
+        app_url: &state.config.app_url,
         token: &verification_token.token,
     };
 
@@ -84,12 +87,11 @@ pub struct AuthSignInParams {
     get,
     path = "/v1/auth/continue/{token}",
     params(
-        ("email_token" = String, Path, description = "Token used to verify email")
+        ("token" = String, Path, description = "Token used to verify email")
     ),
     responses(
-        (status = OK, body = VerifiedEmailResponse, description = "successful operation"),
-        (status = 400, body = AppErrorResponse, description = "Invalid verification token"),
-        (status = 400, body = AppErrorResponse, description = "Verification token has expired")
+        (status = 200, body = VerifiedEmailResponse, description = "successful operation"),
+        (status = 400, body = AppErrorResponse, description = "failed operation"),
     ),
     tag = "auth",
 )]
@@ -138,7 +140,7 @@ pub async fn continue_signin(
 }
 
 pub struct AuthSignInEmail<'a> {
-    pub domain: &'a str,
+    pub app_url: &'a str,
     pub token: &'a str,
 }
 
@@ -149,8 +151,8 @@ impl crate::email::Email for AuthSignInEmail<'_> {
 
     fn body(&self) -> String {
         format!(
-            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: http://{domain}/auth/continue/{token}",
-            domain = self.domain,
+            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: {app_url}/api/continue/{token}",
+            app_url = self.app_url,
             token = self.token,
         )
     }

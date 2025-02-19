@@ -194,6 +194,7 @@ fn simple_config() -> config::Server {
         connection_timeout_seconds: 1,
         pool_size: 5,
         domain_name: "learn.framer.university".to_string(),
+        app_url: "http://localhost:3000".to_string(),
         // This value is to be overridden by the
         // `TestAppBuilder::empty()` fn.
         database_url: "empty".to_string(),
