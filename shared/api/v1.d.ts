@@ -55,18 +55,42 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/users/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        AuthSignInBody: {
-            email: string;
-        };
-        ErrorResponse: {
+        AppErrorResponse: {
             detail: string;
             /** Format: int32 */
             status: number;
             title: string;
+        };
+        AuthSignInBody: {
+            email: string;
+        };
+        Me: {
+            email: string;
+            /** Format: date-time */
+            email_verified?: string | null;
+            /** Format: int64 */
+            id: number;
+            image?: string | null;
         };
         MessageResponse: {
             message: string;
@@ -102,6 +126,15 @@ export interface operations {
                     "application/json": components["schemas"]["MessageResponse"];
                 };
             };
+            /** @description failed operation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppErrorResponse"];
+                };
+            };
         };
     };
     continue_signin: {
@@ -110,7 +143,7 @@ export interface operations {
             header?: never;
             path: {
                 /** @description Token used to verify email */
-                email_token: string;
+                token: string;
             };
             cookie?: never;
         };
@@ -125,13 +158,13 @@ export interface operations {
                     "application/json": components["schemas"]["VerifiedEmailResponse"];
                 };
             };
-            /** @description Verification token has expired */
+            /** @description failed operation */
             400: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
+                    "application/json": components["schemas"]["AppErrorResponse"];
                 };
             };
         };
@@ -156,6 +189,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MessageResponse"];
+                };
+            };
+            /** @description failed operation */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppErrorResponse"];
+                };
+            };
+        };
+    };
+    me: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description successful operation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description unauthorized */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AppErrorResponse"];
                 };
             };
         };
