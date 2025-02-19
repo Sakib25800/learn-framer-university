@@ -18,7 +18,7 @@ use tracing::*;
 use validator::ValidationErrors;
 
 use crate::{email::EmailError, middleware::log_request::ErrorField};
-pub use json::{custom, ErrorResponse};
+pub use json::{custom, AppErrorResponse};
 
 mod json;
 
@@ -32,7 +32,7 @@ pub fn forbidden(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
     custom("Forbidden", StatusCode::FORBIDDEN, detail)
 }
 
-pub fn auth(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
+pub fn unauthorized(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
     custom("Unauthorized", StatusCode::UNAUTHORIZED, detail)
 }
 

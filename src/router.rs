@@ -15,7 +15,9 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
         .routes(routes!(auth::signin, auth::continue_signin))
         .split_for_parts();
 
-    let (protected_router, protected_openapi) = BaseOpenApi::router().split_for_parts();
+    let (protected_router, protected_openapi) = BaseOpenApi::router()
+        .routes(routes!(users::me))
+        .split_for_parts();
 
     let protected_router = protected_router.layer(middleware::from_fn_with_state(
         state.clone(),

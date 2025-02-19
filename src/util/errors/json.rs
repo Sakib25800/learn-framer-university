@@ -11,7 +11,7 @@ use utoipa::ToSchema;
 use super::{AppError, BoxedAppError};
 
 #[derive(Serialize, ToSchema)]
-pub struct ErrorResponse {
+pub struct AppErrorResponse {
     title: String,
     status: u16,
     detail: String,
@@ -19,7 +19,7 @@ pub struct ErrorResponse {
 
 /// Generates a response following [RFC 8707 format](https://datatracker.ietf.org/doc/html/rfc7807)
 pub fn json_error(title: &str, status: StatusCode, detail: &str) -> Response {
-    let json = json!(ErrorResponse {
+    let json = json!(AppErrorResponse {
         title: title.into(),
         status: status.as_u16(),
         detail: detail.into()

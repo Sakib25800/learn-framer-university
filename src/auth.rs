@@ -7,7 +7,7 @@ use tracing::instrument;
 use lfu_database::models::user::User;
 
 use crate::middleware::log_request::RequestLogExt;
-use crate::util::errors::{auth, forbidden, internal, AppResult};
+use crate::util::errors::{internal, unauthorized, AppResult};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Claims {
@@ -51,7 +51,7 @@ pub fn validate_token(jwt_secret: &str, token: &str) -> AppResult<TokenData<Clai
         &DecodingKey::from_secret(jwt_secret.as_bytes()),
         &Validation::default(),
     )
-    .map_err(|_| auth("Invalid token"))?;
+    .map_err(|_| unauthorized("Invalid token"))?;
 
     Ok(token_data)
 }
@@ -70,10 +70,10 @@ impl AuthCheck {
             .headers
             .get(http::header::AUTHORIZATION)
             .and_then(|header| header.to_str().ok())
-            .ok_or(forbidden("Missing authorization header"))?;
+            .ok_or(unauthorized("Invalid or missing authentication"))?;
 
         if !auth_header.starts_with("Bearer ") {
-            return Err(auth("Invalid authorization header format"));
+            return Err(unauthorized("Invalid authorization header format"));
         }
 
         let token = auth_header.trim_start_matches("Bearer ").trim();

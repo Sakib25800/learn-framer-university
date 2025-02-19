@@ -14,7 +14,7 @@ use crate::{
     app::AppState,
     auth::generate_access_token,
     middleware::{json::JsonBody, path::ValidatedPath},
-    util::errors::{auth, AppResult, ErrorResponse},
+    util::errors::{unauthorized, AppErrorResponse, AppResult},
     views::{MessageResponse, VerifiedEmailResponse},
 };
 
@@ -88,8 +88,8 @@ pub struct AuthSignInParams {
     ),
     responses(
         (status = OK, body = VerifiedEmailResponse, description = "successful operation"),
-        (status = 400, body = ErrorResponse, description = "Invalid verification token"),
-        (status = 400, body = ErrorResponse, description = "Verification token has expired")
+        (status = 400, body = AppErrorResponse, description = "Invalid verification token"),
+        (status = 400, body = AppErrorResponse, description = "Verification token has expired")
     ),
     tag = "auth",
 )]
@@ -102,16 +102,16 @@ pub async fn continue_signin(
 
     let verification_token = match VerificationToken::find_by_token(&token, &mut conn).await {
         Ok(token) => token,
-        Err(_) => return Err(auth("Invalid verification token")),
+        Err(_) => return Err(unauthorized("Invalid verification token")),
     };
 
     if verification_token.expires < Utc::now() {
-        return Err(auth("Verification token has expired"));
+        return Err(unauthorized("Verification token has expired"));
     }
 
     let user = match User::find_by_email(&verification_token.identifier, &mut conn).await {
         Ok(user) => user,
-        Err(_) => return Err(auth("Email does not exist")),
+        Err(_) => return Err(unauthorized("Email does not exist")),
     };
 
     let crate::config::Server {

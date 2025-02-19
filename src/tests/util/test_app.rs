@@ -61,7 +61,7 @@ impl TestApp {
             .await
             .unwrap();
 
-        User::verify_email(user.id, &mut conn).await.unwrap();
+        let user = User::verify_email(user.id, &mut conn).await.unwrap();
 
         let config = &self.0.app.config;
         let config::Server {

@@ -1,5 +1,5 @@
 use crate::app::AppState;
-use crate::util::errors::{forbidden, not_found, AppResult};
+use crate::util::errors::{not_found, unauthorized, AppResult};
 use axum::extract::Path;
 use http::header;
 use http::request::Parts;
@@ -21,7 +21,9 @@ pub async fn prometheus(
             .and_then(|value| value.strip_prefix("Bearer "));
 
         if provided_token != Some(expected_token.as_str()) {
-            return Err(forbidden("Invalid or missing metrics authorization token"));
+            return Err(unauthorized(
+                "Invalid or missing metrics authorization token",
+            ));
         }
     } else {
         // To avoid accidentally leaking metrics if the environment variable is not set, prevent

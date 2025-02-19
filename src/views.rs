@@ -1,4 +1,4 @@
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 
@@ -6,7 +6,7 @@ use utoipa::ToSchema;
 pub struct Me {
     pub id: i64,
     pub email: String,
-    pub email_verified: Option<NaiveDateTime>,
+    pub email_verified: Option<DateTime<Utc>>,
     pub image: Option<String>,
 }
 
