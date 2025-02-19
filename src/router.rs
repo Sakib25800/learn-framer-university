@@ -32,7 +32,6 @@ pub fn build_axum_router(state: AppState) -> Router<()> {
         .merge(protected_router)
         .route("/private/metrics/{kind}", get(metrics::prometheus))
         .merge(SwaggerUi::new("/private/swagger-ui").url("/private/openapi.json", openapi.clone()))
-        // .route("/private/openapi.json", get(|| async { Json(openapi) }))
         .fallback(|method: Method| async move {
             match method {
                 Method::HEAD => StatusCode::NOT_FOUND.into_response(),

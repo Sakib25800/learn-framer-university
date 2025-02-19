@@ -8,7 +8,7 @@ use crate::{
 /// Health check
 #[utoipa::path(
     get,
-    path = "/v1",
+    path = "/",
     responses(
         (status = OK, body = MessageResponse, description = "successful operation"),
         (status = 400, body = AppErrorResponse, description = "failed operation"),
