@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "learn.framer.university",
+    "title": "api.learn.framer.university",
     "description": "API documentation for [learn.framer.university](https://learn.framer.university)",
     "contact": {
       "name": "Sakibul Islam",
@@ -44,9 +44,7 @@
     },
     "/v1/auth/continue/{token}": {
       "get": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Verify the user's email",
         "operationId": "continue_signin",
         "parameters": [
@@ -76,9 +74,7 @@
     },
     "/v1/auth/signin": {
       "post": {
-        "tags": [
-          "auth"
-        ],
+        "tags": ["auth"],
         "summary": "Sign in the user and send a sign-in email",
         "operationId": "signin",
         "requestBody": {
@@ -110,9 +106,7 @@
     "schemas": {
       "AuthSignInBody": {
         "type": "object",
-        "required": [
-          "email"
-        ],
+        "required": ["email"],
         "properties": {
           "email": {
             "type": "string"
@@ -121,9 +115,7 @@
       },
       "MessageResponse": {
         "type": "object",
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "properties": {
           "message": {
             "type": "string"
@@ -132,10 +124,7 @@
       },
       "VerifiedEmailResponse": {
         "type": "object",
-        "required": [
-          "access_token",
-          "refresh_token"
-        ],
+        "required": ["access_token", "refresh_token"],
         "properties": {
           "access_token": {
             "type": "string"

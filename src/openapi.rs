@@ -5,7 +5,7 @@ use utoipa_axum::router::OpenApiRouter;
 #[derive(OpenApi)]
 #[openapi(
     info(
-        title = "learn.framer.university",
+        title = "api.learn.framer.university",
         description = "API documentation for [learn.framer.university](https://learn.framer.university)",
         contact(name = "Sakibul Islam", email = "sakibulislam25800@gmail.com"),
         version = "0.0.0",
