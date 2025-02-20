@@ -7,6 +7,9 @@ dockerfile = 'frontend.Dockerfile'
 [build.args]
 API_URL = 'https://api.learn.framer.university'
 
+[env]
+APP_URL= 'https://learn.framer.university'
+
 [http_service]
 internal_port = 3000
 force_https = true
