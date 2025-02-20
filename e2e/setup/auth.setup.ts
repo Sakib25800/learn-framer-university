@@ -14,7 +14,6 @@ setup("authenticate user", async ({ page, request }) => {
 
   const emailContent = await readLatestEmail()
 
-  console.log(emailContent)
   if (!emailContent) {
     throw new Error("Expected continue email to found")
   }

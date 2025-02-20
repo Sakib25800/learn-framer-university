@@ -4,21 +4,33 @@ import { env } from "../../env"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 
-const PUBLIC_ROUTES = ["/v1/auth/signin", "/v1/auth/continue/{token}"]
+const PUBLIC_ROUTES = ["/v1/auth/signin", "/v1/auth/continue"]
+
+const isPublicRoute = (pathname: string) => PUBLIC_ROUTES.some((route) => pathname.startsWith(route))
 
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
     const cookieStore = await cookies()
     const accessToken = cookieStore.get("access_token")?.value
-    const isPublicRoute = PUBLIC_ROUTES.includes(request.url)
 
-    if (!accessToken && !isPublicRoute) {
+    // Attempting to make request to authorized route, so check credentials
+    if (!accessToken && !isPublicRoute(new URL(request.url).pathname)) {
       redirect(`/sign-in?error=${encodeURIComponent("Verification failed")}`)
     }
 
     request.headers.set("Authorization", `Bearer ${accessToken}`)
 
     return request
+  },
+  async onResponse({ response }) {
+    if (response.status === 401) {
+      const cookieStore = await cookies()
+
+      cookieStore.delete("access_token")
+      cookieStore.delete("refresh_token")
+
+      redirect(`/sign-in?error=${encodeURIComponent("Verification failed")}`)
+    }
   },
 }
 

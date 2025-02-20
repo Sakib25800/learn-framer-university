@@ -23,12 +23,17 @@ export const SignInForm = () => {
           name="email"
           className="border border-red-100 text-white"
         />
-        {(state.error || errorFromQuery) && (
-          <div className="text-sm text-red-500">
-            {state.error || (errorFromQuery && decodeURIComponent(errorFromQuery))}
+        {state.success ? (
+          <div className="text-sm text-green-500" data-testid="success-message">
+            {state.success}
           </div>
+        ) : (
+          (state.error || errorFromQuery) && (
+            <div className="text-sm text-red-500" data-testid="error-message">
+              {state.error || (errorFromQuery && decodeURIComponent(errorFromQuery))}
+            </div>
+          )
         )}
-        {state.success && <div className="text-sm text-green-500">{state.success}</div>}
         <button disabled={pending} type="submit" className="cursor-pointer bg-white">
           Sign In
         </button>

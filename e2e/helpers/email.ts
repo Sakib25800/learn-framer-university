@@ -1,6 +1,9 @@
 import fs from "fs/promises"
 import path from "path"
 
+/**
+ * Read the latest email from the /tmp directory.
+ */
 export const readLatestEmail = async () => {
   try {
     const files = await fs.readdir("/tmp")
@@ -35,9 +38,6 @@ export const readLatestEmail = async () => {
 }
 
 export const extractContinueToken = (content: string): string | null | undefined => {
-  // Remove quoted-printable line continuations (= at end of line)
-  const cleanedContent = content.replace(/=\r?\n/g, "")
-  // Match the token after continue/
-  const tokenMatch = cleanedContent.match(/continue\/([a-zA-Z0-9]+)/)
+  const tokenMatch = content.match(/continue\/([a-zA-Z0-9]+)/)
   return tokenMatch ? tokenMatch[1] : null
 }
