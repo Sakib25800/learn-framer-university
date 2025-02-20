@@ -110,7 +110,7 @@ impl TestApp {
             LazyLock::new(|| Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z").unwrap());
 
         static EMAIL_CONTINUE_REGEX: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r"/ap=?\s*i/continue/[a-f0-9]+").unwrap());
+            LazyLock::new(|| Regex::new(r"/api=\s*/continue/[a-f0-9]+").unwrap());
 
         static SEPARATOR: &str = "\n----------------------------------------\n\n";
 
@@ -194,7 +194,7 @@ fn simple_config() -> config::Server {
         connection_timeout_seconds: 1,
         pool_size: 5,
         domain_name: "learn.framer.university".to_string(),
-        app_url: "http://localhost:3000".to_string(),
+        app_url: "https://learn.framer.university".to_string(),
         // This value is to be overridden by the
         // `TestAppBuilder::empty()` fn.
         database_url: "empty".to_string(),

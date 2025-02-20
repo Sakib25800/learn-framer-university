@@ -151,7 +151,8 @@ impl crate::email::Email for AuthSignInEmail<'_> {
 
     fn body(&self) -> String {
         format!(
-            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: https:://learn.framer.university/api/continue/{token}",
+            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: {app_url}/api/continue/{token}",
+            app_url = self.app_url,
             token = self.token,
         )
     }
