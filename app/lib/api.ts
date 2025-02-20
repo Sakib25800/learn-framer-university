@@ -9,11 +9,11 @@ const PUBLIC_ROUTES = ["/v1/auth/signin", "/v1/auth/continue/{token}"]
 const authMiddleware: Middleware = {
   async onRequest({ request }) {
     const cookieStore = await cookies()
-    const accessToken = cookieStore.get("accessToken")?.value
+    const accessToken = cookieStore.get("access_token")?.value
     const isPublicRoute = PUBLIC_ROUTES.includes(request.url)
 
     if (!accessToken && !isPublicRoute) {
-      redirect("/")
+      redirect(`/sign-in?error=${encodeURIComponent("Verification failed")}`)
     }
 
     request.headers.set("Authorization", `Bearer ${accessToken}`)

@@ -1,14 +1,15 @@
 import api from "@/lib/api"
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
-export async function GET(request: Request, { params }: { params: { token: string } }) {
-  const { token } = params
+export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
+  const { token } = await params
 
   const { data, error } = await api.continueSignIn(token)
 
   if (error) {
-    return NextResponse.redirect(new URL("/sign-in?error=verification-failed", request.url))
+    return redirect("/sign-in?error=verification-failed")
   }
 
   const cookieOptions = {
@@ -23,8 +24,8 @@ export async function GET(request: Request, { params }: { params: { token: strin
 
   const cookieStore = await cookies()
 
-  cookieStore.set("accessToken", data.access_token, cookieOptions)
-  cookieStore.set("refreshToken", data.refresh_token, cookieOptions)
+  cookieStore.set("access_token", data.access_token, cookieOptions)
+  cookieStore.set("refresh_token", data.refresh_token, cookieOptions)
 
   return response
 }

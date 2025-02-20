@@ -23,7 +23,11 @@ export const SignInForm = () => {
           name="email"
           className="border border-red-100 text-white"
         />
-        {(state.error || errorFromQuery) && <div className="text-sm text-red-500">{state.error || errorFromQuery}</div>}
+        {(state.error || errorFromQuery) && (
+          <div className="text-sm text-red-500">
+            {state.error || (errorFromQuery && decodeURIComponent(errorFromQuery))}
+          </div>
+        )}
         {state.success && <div className="text-sm text-green-500">{state.success}</div>}
         <button disabled={pending} type="submit" className="cursor-pointer bg-white">
           Sign In

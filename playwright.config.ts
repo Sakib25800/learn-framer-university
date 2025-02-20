@@ -20,17 +20,30 @@ export default defineConfig({
   },
   projects: [
     {
+      name: "setup",
+      testMatch: /.*\.setup\.ts/,
+    },
+    {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
+      dependencies: ["setup"],
     },
   ],
-  webServer: {
-    command: "npm run dev",
-    url: "http://localhost:3000",
-    timeout: 120000,
-    reuseExistingServer: !process.env.CI,
-    stderr: "pipe",
-  },
+  webServer: [
+    {
+      command: "npm run dev",
+      url: "http://localhost:3000",
+      reuseExistingServer: !process.env.CI,
+      stderr: "pipe",
+    },
+    {
+      command: "cargo run",
+      url: "http://localhost:8080",
+      reuseExistingServer: !process.env.CI,
+      stderr: "pipe",
+      stdout: "pipe",
+    },
+  ],
   timeout: 30000,
   expect: {
     timeout: 10000,

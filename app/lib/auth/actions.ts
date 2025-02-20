@@ -23,8 +23,8 @@ export const signIn = validatedAction(signInSchema, async ({ email }) => {
 export const signOut = async () => {
   const cookieStore = await cookies()
 
-  cookieStore.delete("accessToken")
-  cookieStore.delete("refreshToken")
+  cookieStore.delete("access_token")
+  cookieStore.delete("refresh_token")
 
   redirect("/sign-in")
 }
