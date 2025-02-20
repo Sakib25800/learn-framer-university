@@ -146,13 +146,12 @@ pub struct AuthSignInEmail<'a> {
 
 impl crate::email::Email for AuthSignInEmail<'_> {
     fn subject(&self) -> String {
-        "Framer University: Please confirm your email address".into()
+        "Activation link for Framer University".into()
     }
 
     fn body(&self) -> String {
         format!(
-            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: {app_url}/api/continue/{token}",
-            app_url = self.app_url,
+            "Hey there! Welcome to Framer University.\nPlease click the link below to sign in: https:://learn.framer.university/api/continue/{token}",
             token = self.token,
         )
     }

@@ -109,7 +109,7 @@ async fn signin_should_work_for_existing_user() {
 fn extract_token_from_signin_email(emails: &[String]) -> String {
     let body = emails
         .iter()
-        .find(|m| m.contains("Subject: Framer University: Please confirm your email address"))
+        .find(|m| m.contains("Subject: Activation link for Framer University"))
         .expect("Missing email");
 
     let after_prefix = body

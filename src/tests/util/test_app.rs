@@ -110,7 +110,7 @@ impl TestApp {
             LazyLock::new(|| Regex::new(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z").unwrap());
 
         static EMAIL_CONTINUE_REGEX: LazyLock<Regex> =
-            LazyLock::new(|| Regex::new(r"/continue/[\w-]+(?:=\r?\n)?(?:[\w-]+)?").unwrap());
+            LazyLock::new(|| Regex::new(r"/ap=?\s*i/continue/[a-f0-9]+").unwrap());
 
         static SEPARATOR: &str = "\n----------------------------------------\n\n";
 
@@ -120,7 +120,7 @@ impl TestApp {
             .map(|email| {
                 let email = EMAIL_HEADER_REGEX.replace_all(&email, "");
                 let email = DATE_TIME_REGEX.replace_all(&email, "[0000-00-00T00:00:00Z]");
-                let email = EMAIL_CONTINUE_REGEX.replace_all(&email, "/continue/[continue-token]");
+                let email = EMAIL_CONTINUE_REGEX.replace_all(&email, "/api/continue/[token]");
                 email.to_string()
             })
             .collect::<Vec<_>>()
