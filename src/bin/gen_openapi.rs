@@ -2,7 +2,6 @@ use colored::*;
 use std::error::Error;
 use std::fs;
 use std::process::Command;
-use tokio;
 
 // Hacky, need to improve this
 #[tokio::main]
