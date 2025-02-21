@@ -19,6 +19,16 @@
 
 Learn everything there is to know about Framer.
 
+## Environments
+
+**Staging**:
+- https://learn-framer-university-api-staging.fly.dev
+- https://learn-framer-university-staging.fly.dev
+
+**Production**:
+- https://api.learn.framer.university
+- https://learn.framer.university
+
 ## Setting up development environment
 
 ### Working on the Frontend
