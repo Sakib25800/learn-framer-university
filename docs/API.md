@@ -47,7 +47,7 @@ See `.env.sample` for an example of what should be in the env file.
 
 This module is responsible for managing database connections and migrations.
 
-- **Database Connection Pool**: The connection pool is managed using `deadpool-diesel` and `diesel_async`
+- **Database Connection Pool**: The connection pool is managed using `bb8` and `diesel_async`
 - **Database Migrations**: The database migrations are managed using `diesel_migrations`
 - **Database Configuration**: The database configuration is managed using `diesel_config` and is read from the environment. The settings include:
 
