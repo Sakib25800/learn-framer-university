@@ -76,16 +76,6 @@ learn.framer.university is deployed on [Fly](https://fly.io/).
 - `frontend.Dockerfile` - Dockerfile config for production frontend
 - `frontend.staging.Dockerfile` - Dockerfile config for staging frontend
 
-URLs:
-
-**Staging**:
-- https://learn-framer-university-api-staging.fly.dev
-- https://learn-framer-university-staging.fly.dev
-
-**Production**:
-- https://learn-framer-university-api.fly.dev
-- https://learn-framer-university.fly.dev
-
 ## Development
 
 These files are mostly only relevant when running in development.
