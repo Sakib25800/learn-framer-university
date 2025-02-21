@@ -1,3 +1,5 @@
+# syntax = docker/dockerfile:1
+
 ARG NODE_VERSION=23.6.0
 FROM node:${NODE_VERSION}-slim AS base
 
