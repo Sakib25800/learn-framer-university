@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/usr/local/cargo,from=rust:latest,source=/usr/loca
 FROM debian:bookworm-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends postgresql \
+    && apt-get install -y --no-install-recommends postgresql ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
 RUN useradd -ms /bin/bash app
