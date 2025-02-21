@@ -51,6 +51,7 @@ storybook-static/
 /blob-report/
 /playwright/.cache/
 playwright-results/
+/playwright/
 
 # JUnit
 junit.xml

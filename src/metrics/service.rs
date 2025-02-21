@@ -1,11 +1,12 @@
-use super::macros::metrics;
-use crate::schema::users;
-use crate::util::errors::AppResult;
 use chrono::Utc;
 use diesel::prelude::*;
 use diesel_async::AsyncPgConnection;
 use diesel_async::RunQueryDsl;
 use prometheus::{proto::MetricFamily, IntGauge};
+
+use super::macros::metrics;
+use crate::util::errors::AppResult;
+use lfu_database::schema::users;
 
 metrics! {
     pub struct ServiceMetrics {

@@ -10,4 +10,5 @@
 //! - testing output serialization of a route
 //! - testing query param combinations of a route
 
-pub mod me;
+pub mod auth;
+pub mod users;

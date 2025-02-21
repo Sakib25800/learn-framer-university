@@ -1,13 +1,13 @@
-use crate::middleware::log_request::RequestLogExt;
-use crate::models::refresh_token::NewRefreshToken;
-use crate::models::user::User;
-use crate::util::errors::{auth, internal};
-use crate::util::errors::{forbidden, AppResult};
 use diesel_async::AsyncPgConnection;
 use http::request::Parts;
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, TokenData, Validation};
 use time::OffsetDateTime;
 use tracing::instrument;
+
+use lfu_database::models::user::User;
+
+use crate::middleware::log_request::RequestLogExt;
+use crate::util::errors::{internal, unauthorized, AppResult};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Claims {
@@ -25,7 +25,7 @@ pub struct Tokens {
 
 pub fn generate_access_token(
     jwt_secret: &str,
-    jwt_access_token_expiration_hours: i64,
+    jwt_access_token_expiration_hours: &i64,
     user: &User,
 ) -> AppResult<String> {
     let expiration =
@@ -51,24 +51,9 @@ pub fn validate_token(jwt_secret: &str, token: &str) -> AppResult<TokenData<Clai
         &DecodingKey::from_secret(jwt_secret.as_bytes()),
         &Validation::default(),
     )
-    .map_err(|_| auth("Invalid token"))?;
+    .map_err(|_| unauthorized("Invalid token"))?;
 
     Ok(token_data)
-}
-
-pub fn generate_tokens(
-    jwt_secret: &str,
-    jwt_access_token_expiration_hours: i64,
-    jwt_refresh_token_expiration_days: i64,
-    user: &User,
-) -> AppResult<Tokens> {
-    let access_token = generate_access_token(jwt_secret, jwt_access_token_expiration_hours, user)?;
-    let refresh_token = NewRefreshToken::new(user.id, jwt_refresh_token_expiration_days);
-
-    Ok(Tokens {
-        access_token,
-        refresh_token: refresh_token.token,
-    })
 }
 
 #[derive(Debug)]
@@ -85,10 +70,10 @@ impl AuthCheck {
             .headers
             .get(http::header::AUTHORIZATION)
             .and_then(|header| header.to_str().ok())
-            .ok_or(forbidden("Missing authorization header"))?;
+            .ok_or(unauthorized("Invalid or missing authentication"))?;
 
         if !auth_header.starts_with("Bearer ") {
-            return Err(auth("Invalid authorization header format"));
+            return Err(unauthorized("Invalid authorization header format"));
         }
 
         let token = auth_header.trim_start_matches("Bearer ").trim();

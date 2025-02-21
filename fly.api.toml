@@ -5,13 +5,14 @@ primary_region = 'lhr'
 dockerfile = 'frontend.Dockerfile'
 
 [env]
-ALLOWED_ORIGINS = ['http://learn-framer-university.fly.dev']
+ALLOWED_ORIGINS = ['https://learn.framer.university']
 INSTANCE_METRICS_LOG_EVERY_SECONDS = 60
 JWT_ACCESS_TOKEN_EXPIRATION_HOURS = 24
 JWT_REFRESH_TOKEN_EXPIRATION_DAYS = 7
 EMAIL_VERIFICATION_EXPIRATION_HOURS = 48
 CONNECTION_TIMEOUT_SECONDS = 3
 POOL_SIZE = 3
+APP_URL= 'https://api.learn.framer.university'
 
 [http_service]
 internal_port = 8080
@@ -25,10 +26,3 @@ processes = ['app']
 memory = '1gb'
 cpu_kind = 'shared'
 cpus = 1
-
-[[http_service.checks]]
-grace_period = "10s"
-interval = "30s"
-method = "GET"
-timeout = "5s"
-path = "/api/v1"

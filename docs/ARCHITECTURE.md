@@ -42,23 +42,49 @@ These files have to do with the frontend:
   development and deployment
 - `public/` - Static files that are merged into `dist/` during build
 
+## Shared
+
+- `shared/` - Shared code between the frontend and backend
+
+If changes are made to the API, then run the following to ensure type safety.
+
+To generate the `shared/api/openapi.json` file, run the following command:
+
+```
+cargo run --bin gen_openapi
+```
+
+To generate the `shared/api/v1.d.ts` file for API type definitions, run the following command:
+
+```
+npx openapi-typescript ./shared/api/openapi.json -o ./shared/api/v1.d.ts
+```
+
 ## Deployment - Fly.io
 
 learn.framer.university is deployed on [Fly](https://fly.io/).
 
-These files are Fly-specific; for deployment to Fly.
-
-- `fly.api.toml` - Fly config for the API
+- `fly.api.toml` - Fly config for production API
 - `fly.staging.api.toml` - Fly config for the staging API
 
-- `fly.frontend.toml` - Fly config for frontend
-- `fly.staging.frontend.toml` - Fly config for frontend
+- `fly.frontend.toml` - Fly config for production frontend
+- `fly.staging.frontend.toml` - Fly config for staging frontend
 
-- `api.Dockerfile` - Dockerfile config for the API
+- `api.Dockerfile` - Dockerfile config for production API
 - `api.staging.Dockerfile` - Dockerfile config for the staging API
 
-- `frontend.Dockerfile` - Dockerfile config for frontend
+- `frontend.Dockerfile` - Dockerfile config for production frontend
 - `frontend.staging.Dockerfile` - Dockerfile config for staging frontend
+
+URLs:
+
+**Staging**:
+- https://learn-framer-university-api-staging.fly.dev
+- https://learn-framer-university-staging.fly.dev
+
+**Production**:
+- https://learn-framer-university-api.fly.dev
+- https://learn-framer-university.fly.dev
 
 ## Development
 

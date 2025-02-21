@@ -1,0 +1,15 @@
+[package]
+name = "lfu_database"
+version = "0.0.0"
+edition = "2021"
+
+[lints]
+workspace = true
+
+[dependencies]
+bon = "3.3.2"
+chrono = { version = "0.4.39", default-features = false, features = ["serde"] }
+diesel = { version = "2.2.7", features = ["serde_json", "chrono", "numeric"] }
+diesel-async = "0.5.2"
+diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
+serde = {version = "1.0.217", features = ["derive"]}

@@ -1,7 +1,5 @@
 //! Log all requests, but with additional data
 
-use crate::controllers::util::RequestPartsExt;
-use crate::headers::XRequestId;
 use axum::extract::{MatchedPath, Request};
 use axum::middleware::Next;
 use axum::response::IntoResponse;
@@ -15,9 +13,11 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::sync::Arc;
 use std::time::Instant;
-use tracing::Level;
+use tracing::*;
 
 use super::real_ip::RealIp;
+use crate::controllers::util::RequestPartsExt;
+use crate::headers::XRequestId;
 
 #[derive(Clone, Debug)]
 pub struct ErrorField(pub String);

@@ -4,45 +4,49 @@
 //!   is more dynamic is box allocated. Low-level errors are typically not converted to user facing errors and most usage
 //!   lies within models, controllers, and middleware layers.
 
+use axum::{response::IntoResponse, Extension};
+use diesel::result::{DatabaseErrorKind, Error as DieselError};
+use http::StatusCode;
 use std::{
     any::{Any, TypeId},
     borrow::Cow,
     error::Error,
     fmt,
 };
-
-use axum::{response::IntoResponse, Extension};
-use diesel::result::{DatabaseErrorKind, Error as DieselError};
-use http::StatusCode;
-use json::custom;
 use tokio::task::JoinError;
+use tracing::*;
 use validator::ValidationErrors;
 
-use crate::middleware::log_request::ErrorField;
+use crate::{email::EmailError, middleware::log_request::ErrorField};
+pub use json::{custom, AppErrorResponse};
 
 mod json;
 
 pub type BoxedAppError = Box<dyn AppError>;
 
 pub fn bad_request(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::BAD_REQUEST, detail)
+    custom("Invalid request", StatusCode::BAD_REQUEST, detail)
 }
 
 pub fn forbidden(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::FORBIDDEN, detail)
+    custom("Forbidden", StatusCode::FORBIDDEN, detail)
 }
 
-pub fn auth(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::UNAUTHORIZED, detail)
+pub fn unauthorized(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
+    custom("Unauthorized", StatusCode::UNAUTHORIZED, detail)
 }
 
 pub fn not_found(detail: impl Into<Cow<'static, str>>) -> BoxedAppError {
-    custom(StatusCode::NOT_FOUND, detail)
+    custom("Not found", StatusCode::NOT_FOUND, detail)
 }
 
 /// Returns an error with status 503 and the provided description as JSON
 pub fn service_unavailable() -> BoxedAppError {
-    custom(StatusCode::SERVICE_UNAVAILABLE, "Service unavailable")
+    custom(
+        "Service unavailable",
+        StatusCode::SERVICE_UNAVAILABLE,
+        "Service unavailable",
+    )
 }
 
 // =============================================================================
@@ -51,7 +55,7 @@ pub fn service_unavailable() -> BoxedAppError {
 pub trait AppError: Send + fmt::Display + fmt::Debug + 'static {
     /// Generate an HTTP response for the error
     ///
-    /// If none is returned, the error will bublbe up the middleware stack
+    /// If none is returned, the error will bubble up the middleware stack
     /// where it is eventually logged and a status 500.
     fn response(&self) -> axum::response::Response;
 
@@ -115,9 +119,16 @@ impl From<DieselError> for BoxedAppError {
     }
 }
 
-impl From<diesel_async::pooled_connection::deadpool::PoolError> for BoxedAppError {
-    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> BoxedAppError {
+impl From<diesel_async::pooled_connection::PoolError> for BoxedAppError {
+    fn from(err: diesel_async::pooled_connection::PoolError) -> BoxedAppError {
         error!("Database pool error: {err}");
+        service_unavailable()
+    }
+}
+
+impl From<diesel_async::pooled_connection::bb8::RunError> for BoxedAppError {
+    fn from(err: diesel_async::pooled_connection::bb8::RunError) -> BoxedAppError {
+        error!("Database pool run error: {err}");
         service_unavailable()
     }
 }
@@ -149,6 +160,19 @@ impl From<JoinError> for BoxedAppError {
 impl From<ValidationErrors> for BoxedAppError {
     fn from(err: ValidationErrors) -> BoxedAppError {
         Box::new(err)
+    }
+}
+
+impl From<EmailError> for BoxedAppError {
+    fn from(error: EmailError) -> Self {
+        match error {
+            EmailError::Address(error) => Box::new(error),
+            EmailError::MessageBuilder(error) => Box::new(error),
+            EmailError::Transport(error) => {
+                error!(?error, "Failed to send email");
+                internal("Failed to send the email")
+            }
+        }
     }
 }
 
@@ -200,7 +224,7 @@ mod tests {
 
     #[test]
     fn http_error_responses() {
-        use crate::serde::de::Error;
+        use serde::de::Error;
 
         // Types for handling common error status codes
         assert_eq!(bad_request("").response().status(), StatusCode::BAD_REQUEST);

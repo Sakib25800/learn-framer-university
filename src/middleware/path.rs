@@ -6,7 +6,7 @@ use axum::{
 };
 use serde::de::DeserializeOwned;
 
-pub struct ValidatedPath<T>(T);
+pub struct ValidatedPath<T>(pub T);
 
 impl<S, T> FromRequestParts<S> for ValidatedPath<T>
 where

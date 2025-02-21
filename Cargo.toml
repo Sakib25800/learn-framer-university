@@ -5,18 +5,22 @@ edition = "2021"
 authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
 repository = "https://github.com/sakib25800/learn-framer-university"
 description = "Backend of learn.framer.university"
+default-run = "server"
 
 [workspace]
 members = ["crates/*"]
 
 [package.metadata.cargo-machete]
-ignored = ["log"]
+ignored = ["log", "diesel-derive-enum"]
 
 [workspace.metadata.cargo-machete]
-ignored = ["log"]
+ignored = ["log", "diesel-derive-enum"]
 
 [workspace.lints.clippy]
 too_many_arguments = "allow"
+
+[lib]
+name = "learn_framer_university"
 
 [lints]
 workspace = true
@@ -32,6 +36,10 @@ panic = 'unwind'
 incremental = true
 codegen-units = 256
 rpath = false
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
 
 [profile.release]
 opt-level = 2
@@ -60,19 +68,31 @@ derive_more = {version="1.0.0",features = ["deref"]}
 sentry ={version= "0.36.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
 json-subscriber = "0.2.4"
 chrono = {version = "0.4.39", features = ["serde"]}
-deadpool-diesel = { version = "0.6.1", features = ["postgres", "tracing"] }
 diesel = { version = "2.2.7", features = ["postgres", "serde_json", "chrono", "numeric"] }
-diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "deadpool", "postgres"] }
+diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "postgres", "bb8"] }
 diesel_migrations = { version = "=2.2.0", features = ["postgres"] }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
-uuid = { version = "1.12.1", features = ["v4"] }
 axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
 parking_lot = "0.12.3"
 serde_urlencoded = "0.7.1"
 env-var = "1"
 log = "0.4"
 axum-test = "17.2.0"
+lettre = { version = "0.11.12", default-features = false, features = ["file-transport", "smtp-transport", "hostname", "builder", "tokio1", "tokio1-native-tls"] }
+rand = "0.9.0"
+thiserror = "2.0.11"
+regex = "1.11.1"
+insta = { version = "1.42.1", features = ["glob", "json", "redactions"] }
+utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
+lfu_database = { path = "crates/lfu_database" }
+reqwest = "0.12.12"
+colored = "3.0.0"
+futures-util = "0.3.31"
+rustls-platform-verifier = "0.5.0"
+rustls = "0.23.23"
+tokio-postgres-rustls = "0.13.0"
+tokio-postgres = "0.7.13"
 
 [dev-dependencies]
 bytes = "1.9.0"
-framer_university_test_db = { path = "crates/framer_university_test_db" }
+lfu_test_database = { path = "crates/lfu_test_database" }
