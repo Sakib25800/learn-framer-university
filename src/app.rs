@@ -22,7 +22,7 @@ pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 
 pub struct App {
     /// Database connection pool
-    pub database: Pool<AsyncPgConnection>, // Changed
+    pub database: Pool<AsyncPgConnection>,
 
     /// Server configuration
     pub config: Arc<config::Server>,

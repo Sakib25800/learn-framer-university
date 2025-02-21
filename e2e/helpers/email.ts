@@ -38,6 +38,10 @@ export const readLatestEmail = async () => {
 }
 
 export const extractContinueToken = (content: string): string | null | undefined => {
-  const tokenMatch = content.match(/continue\/([a-zA-Z0-9]+)/)
+  // Due to quoted-printable encoding a '=' is used at the end of line,
+  // so remove it.
+  const cleanedContent = content.replace(/=\r?\n/g, "")
+  // Match the token after continue/
+  const tokenMatch = cleanedContent.match(/continue\/([a-zA-Z0-9]+)/)
   return tokenMatch ? tokenMatch[1] : null
 }

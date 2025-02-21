@@ -2,6 +2,7 @@ import api from "@/lib/api"
 import { NextResponse } from "next/server"
 import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
+import { env } from "env"
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params
@@ -20,7 +21,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     maxAge: 60 * 60 * 24 * 7, // 7 days
   }
 
-  const response = NextResponse.redirect(new URL("/profile", request.url))
+  const response = NextResponse.redirect(new URL("/profile", env.NEXT_PUBLIC_APP_URL))
 
   const cookieStore = await cookies()
 

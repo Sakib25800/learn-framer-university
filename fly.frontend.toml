@@ -6,6 +6,7 @@ dockerfile = 'frontend.Dockerfile'
 
 [build.args]
 NEXT_PUBLIC_API_URL = 'https://api.learn.framer.university'
+NEXT_PUBLIC_APP_URL = 'https://learn.framer.university'
 
 [http_service]
 internal_port = 3000
