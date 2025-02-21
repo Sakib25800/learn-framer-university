@@ -1,6 +1,9 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    "@tailwindcss/postcss": {
+      // https://github.com/vercel/next.js/issues/75817
+      optimize: { minify: false },
+    },
   },
 }
 
