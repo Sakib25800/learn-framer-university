@@ -68,9 +68,8 @@ derive_more = {version="1.0.0",features = ["deref"]}
 sentry ={version= "0.36.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
 json-subscriber = "0.2.4"
 chrono = {version = "0.4.39", features = ["serde"]}
-deadpool-diesel = { version = "0.6.1", features = ["postgres", "tracing"] }
 diesel = { version = "2.2.7", features = ["postgres", "serde_json", "chrono", "numeric"] }
-diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "deadpool", "postgres"] }
+diesel-async = { version = "0.5.2", features = ["async-connection-wrapper", "postgres", "bb8"] }
 diesel_migrations = { version = "=2.2.0", features = ["postgres"] }
 diesel-derive-enum = { version = "2.1.0", features = ["postgres"] }
 axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
@@ -88,6 +87,11 @@ utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
 lfu_database = { path = "crates/lfu_database" }
 reqwest = "0.12.12"
 colored = "3.0.0"
+futures-util = "0.3.31"
+rustls-platform-verifier = "0.5.0"
+rustls = "0.23.23"
+tokio-postgres-rustls = "0.13.0"
+tokio-postgres = "0.7.13"
 
 [dev-dependencies]
 bytes = "1.9.0"

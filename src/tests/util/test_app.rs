@@ -150,7 +150,7 @@ impl TestAppBuilder {
         let test_database = TestDatabase::new();
         self.config.database_url = test_database.url().to_string();
 
-        let (app, test_server) = build_app(self.config);
+        let (app, test_server) = build_app(self.config).await;
 
         let test_app_inner = TestAppInner {
             app,
@@ -201,11 +201,11 @@ fn simple_config() -> config::Server {
     }
 }
 
-fn build_app(config: config::Server) -> (Arc<App>, TestServer) {
+async fn build_app(config: config::Server) -> (Arc<App>, TestServer) {
     // Use in-memory email backend for all tests, allowing tests to analyse emails sent.
     let emails = Emails::new_in_memory();
 
-    let app = Arc::new(App::new(config, emails));
+    let app = Arc::new(App::new(config, emails).await);
 
     let router = build_handler(Arc::clone(&app));
     // Manually add socket address to request extensions to prevent

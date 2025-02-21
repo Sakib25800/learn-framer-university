@@ -18,7 +18,7 @@ pub struct Server {
     // Database
     pub database_url: String,
     pub connection_timeout_seconds: u64,
-    pub pool_size: usize,
+    pub pool_size: u32,
     // Other
     pub app_url: String,
     pub domain_name: String,

@@ -119,9 +119,16 @@ impl From<DieselError> for BoxedAppError {
     }
 }
 
-impl From<diesel_async::pooled_connection::deadpool::PoolError> for BoxedAppError {
-    fn from(err: diesel_async::pooled_connection::deadpool::PoolError) -> BoxedAppError {
+impl From<diesel_async::pooled_connection::PoolError> for BoxedAppError {
+    fn from(err: diesel_async::pooled_connection::PoolError) -> BoxedAppError {
         error!("Database pool error: {err}");
+        service_unavailable()
+    }
+}
+
+impl From<diesel_async::pooled_connection::bb8::RunError> for BoxedAppError {
+    fn from(err: diesel_async::pooled_connection::bb8::RunError) -> BoxedAppError {
+        error!("Database pool run error: {err}");
         service_unavailable()
     }
 }
