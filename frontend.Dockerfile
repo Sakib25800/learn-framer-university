@@ -1,5 +1,3 @@
-# syntax = docker/dockerfile:1
-
 ARG NODE_VERSION=23.6.0
 FROM node:${NODE_VERSION}-slim AS base
 
@@ -24,18 +22,22 @@ FROM base AS build
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
 
+# Install pnpm
+RUN npm install -g pnpm
+
 # Install node modules
-COPY package-lock.json package.json ./
-RUN npm ci --include=dev
+COPY pnpm-lock.yaml ./
+COPY package.json ./
+RUN pnpm install --frozen-lockfile
 
 # Copy application code
 COPY . .
 
 # Build application
-RUN npx next build
+RUN pnpm exec next build
 
 # Remove development dependencies
-RUN npm prune --omit=dev
+RUN pnpm prune --prod
 
 
 # Final stage for app image

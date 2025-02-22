@@ -6,7 +6,7 @@ const env = { ...process.env }
 
 ;(async () => {
   // If running the web server then prerender pages
-  if (process.argv.slice(-3).join(" ") === "npm run start") {
+  if (process.argv.slice(-3).join(" ") === "pnpm start") {
     await exec("npx next build --experimental-build-mode generate")
   }
 

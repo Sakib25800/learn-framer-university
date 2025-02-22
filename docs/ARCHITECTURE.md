@@ -36,9 +36,8 @@ These files have to do with the frontend:
 - `app/` - The frontend's source code
 - `dist/` - Contains the distributable (optimized and self-contained) output of building the
   frontend; served under the root `/` url - (ignored in `.gitignore`)
-- `node_modules/` - npm dependencies - (ignored in `.gitignore`)
-- `package.json` - Defines the npm package and its dependencies
-- `package-lock.json` - Locks dependencies to specific versions providing consistency across
+- `node_modules/` - node dependencies - (ignored in `.gitignore`)
+- `pnpm-lock.yaml` - Locks dependencies to specific versions providing consistency across
   development and deployment
 - `public/` - Static files that are merged into `dist/` during build
 

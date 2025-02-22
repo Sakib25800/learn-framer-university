@@ -9,7 +9,7 @@ repos:
     hooks:
       - id: lint-frontend
         name: Lint Frontend
-        entry: npm run lint
+        entry: pnpm lint
         language: node
         types: [ts, tsx, javascript]
         pass_filenames: false
@@ -17,7 +17,7 @@ repos:
 
       - id: prettier-frontend
         name: Prettier Frontend
-        entry: npm run prettier
+        entry: pnpm prettier
         language: node
         types: [ts, tsx, javascript]
         pass_filenames: false
@@ -49,7 +49,7 @@ repos:
 
       - id: test-frontend
         name: Test Frontend
-        entry: npm run test:unit
+        entry: pnpm test:unit
         language: node
         types: [ts, tsx, javascript]
         pass_filenames: false
