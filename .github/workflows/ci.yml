@@ -15,6 +15,7 @@ env:
   CARGO_MACHETE_VERSION: 0.7.0
   PNPM_VERSION: 10.4.1
   POSTGRES_VERSION: 16
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
 jobs:
   changed-files:
@@ -275,3 +276,47 @@ jobs:
           name: playwright-results
           path: playwright-results/
           retention-days: 30
+
+  deploy-staging:
+    name: Deploy Staging
+    needs: [backend-lint, backend-deps, backend-test, frontend-lint, frontend-unit-test, e2e-test]
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy API to staging
+        run: flyctl deploy --config fly.staging.api.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy Frontend to staging
+        run: flyctl deploy --config fly.staging.frontend.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  deploy-production:
+    name: Deploy Production
+    needs: [backend-lint, backend-deps, backend-test, frontend-lint, frontend-unit-test, e2e-test]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy API to production
+        run: flyctl deploy --config fly.api.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      - name: Deploy Frontend to production
+        run: flyctl deploy --config fly.frontend.toml --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
