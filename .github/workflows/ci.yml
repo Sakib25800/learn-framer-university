@@ -1,0 +1,277 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_MACHETE_VERSION: 0.7.0
+  PNPM_VERSION: 10.4.1
+  POSTGRES_VERSION: 16
+
+jobs:
+  changed-files:
+    name: Changed Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-frontend
+        with:
+          files: |
+            app/**
+            src/**
+            public/**
+            shared/**
+            next.config.ts
+            package.json
+            package-lock.json
+            pnpm-lock.yaml
+            tsconfig.json
+            prettier.config.js
+            postcss.config.mjs
+            eslint.config.mjs
+            frontend.Dockerfile
+            frontend.staging.Dockerfile
+
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-api
+        with:
+          files: |
+            api/**
+            migrations/**
+            diesel.toml
+            Cargo.toml
+            api.Dockerfile
+            api.staging.Dockerfile
+
+      - uses: tj-actions/changed-files@v45
+        id: changed-files-rust-lockfiles
+        with:
+          files: |
+            Cargo.lock
+
+    outputs:
+      frontend: ${{ steps.changed-files-frontend.outputs.any_modified }}
+      api: ${{ steps.changed-files-api.outputs.any_modified }}
+      rust-lockfile: ${{ steps.changed-files-rust-lockfiles.outputs.any_modified }}
+
+  backend-lint:
+    name: Backend / Lint
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.api == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
+
+    env:
+      RUSTFLAGS: "-D warnings"
+      RUSTDOCFLAGS: "-D warnings"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - run: rustup component add rustfmt
+      - run: rustup component add clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - run: cargo fmt --check --all
+      - run: cargo clippy --all-targets --all-features --workspace
+      - run: cargo doc --no-deps --document-private-items
+
+  backend-deps:
+    name: Backend / Dependencies
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: github.event_name != 'pull_request' || needs.changed-files.outputs.rust-lockfile == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - run: cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
+      - run: cargo machete
+
+  backend-test:
+    name: Backend / Test
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.api == 'true'
+
+    env:
+      RUST_BACKTRACE: 1
+      TEST_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
+      RUSTFLAGS: "-D warnings -Cinstrument-coverage"
+      MALLOC_CONF: "background_thread:true,abort_conf:true,abort:true,junk:true"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Remove the Android SDK to free up space
+      - run: sudo rm -rf /usr/local/lib/android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      # Update `pg_dump` to the same version as the running PostgreSQL server
+      - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
+      - run: sudo systemctl start postgresql.service
+      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
+
+      - run: cargo build --tests --workspace
+      - run: cargo test --workspace
+
+  frontend-lint:
+    name: Frontend / Lint
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.frontend == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version-file: package.json
+
+      - run: pnpm install
+
+      - run: pnpm lint
+      - run: pnpm prettier
+
+  frontend-unit-test:
+    name: Frontend / Unit Test
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.frontend == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version-file: package.json
+
+      - run: pnpm install
+
+      - run: pnpm test:unit
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: jest-results
+          path: junit.xml
+          retention-days: 5
+
+  backend-build:
+    name: Backend / Build
+    runs-on: ubuntu-latest
+    needs: changed-files
+    if: needs.changed-files.outputs.api == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+
+      - name: Build backend binary
+        run: cargo build
+
+      - name: Upload backend binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-binary
+          path: target/debug/server
+          retention-days: 1
+
+  e2e-test:
+    name: E2E Test
+    runs-on: ubuntu-latest
+    needs: [changed-files, backend-build]
+    if: needs.changed-files.outputs.frontend == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version-file: package.json
+
+      - name: Download backend binary
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-binary
+          path: target/debug/
+
+      - name: Make binary executable
+        run: chmod +x target/debug/server
+
+      - run: pnpm install
+
+      # Install Playwright browsers
+      - run: pnpm playwright install --with-deps chromium
+
+      # Start PostgreSQL service (needed for API)
+      - run: sudo systemctl start postgresql.service
+      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
+
+      # Run E2E tests with pre-built backend binary
+      - run: pnpm test:e2e
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
+          BACKEND_BINARY_PATH: ./target/debug/server
+
+      # Upload test results and artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-results
+          path: playwright-results/
+          retention-days: 30
