@@ -22,10 +22,14 @@ Learn everything there is to know about Framer.
 ## Environments
 
 **Staging**:
+Automatically deploys on every push to the `main` branch
+
 - https://learn-framer-university-api-staging.fly.dev
 - https://learn-framer-university-staging.fly.dev
 
 **Production**:
+Automatically deploys when a new version tag is created (e.g., `v1.0.0`)
+
 - https://api.learn.framer.university
 - https://learn.framer.university
 
