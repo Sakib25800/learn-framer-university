@@ -28,7 +28,7 @@ Automatically deploys on every push to the `main` branch
 - https://learn-framer-university-staging.fly.dev
 
 **Production**:
-Automatically deploys when a new version tag is created (e.g., `v1.0.0`)
+Automatically deploys when a new version tag is created
 
 - https://api.learn.framer.university
 - https://learn.framer.university
