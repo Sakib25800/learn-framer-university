@@ -6,11 +6,11 @@ The code to run the frontend is located in _app_.
 
 1. Install dependencies:
 ```console
-npm install
+pnpm install
 ```
 2. Run the development server:
 ```console
-npm run dev
+pnpm dev
 ```
 3. Open `localhost:3000` in your browser.
 
@@ -81,7 +81,7 @@ export const FilledForm: Story = {
 
 ### Smoke Testing
 
-Storybook's out-of-the-box support for smoke testing to verify that components render correctly without any errors. Just run `npm run test-storybook` to perform smoke testing. Remember to write stories in JSX or TSX format only. Smoke testing and a lot of other functionalities dont work well with MDX stories.
+Storybook's out-of-the-box support for smoke testing to verify that components render correctly without any errors. Just run `pnpm test-storybook` to perform smoke testing. Remember to write stories in JSX or TSX format only. Smoke testing and a lot of other functionalities dont work well with MDX stories.
 
 ## Environment Variables
 

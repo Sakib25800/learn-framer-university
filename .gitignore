@@ -26,11 +26,11 @@ coverage
 *.pem
 
 # Debug logs
-npm-debug.log*
+pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-src/npm-debug.log*
+src/pnpm-debug.log*
 src/yarn-debug.log*
 src/yarn-error.log*
 src/.pnpm-debug.log*

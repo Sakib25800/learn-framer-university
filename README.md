@@ -38,20 +38,20 @@ Learn everything there is to know about Framer.
 In order to run the backend, you will need to have installed:
 
 - [node](https://nodejs.org/en/) is the runtime environment
-- [npm](https://www.npmjs.com/) is the Node.js package manager
+- [pnpm](https://www.pnpm.io/) is the Node.js package manager
 
 #### Building and serving the frontend
 
 To install the npm packages, run the following:
 ```console
-npm install
+pnpm install
 ```
 
 #### Running the frontend tests
 
 To run the frontend tests, run the following:
 ```console
-npm run test
+pnpm test
 ```
 
 ### Working on the Backend
@@ -118,7 +118,7 @@ without a restart needed, and you can leave the frontend running while you
 restart the server):
 
 ```console
-npm run dev
+pnpm run dev
 ```
 
 And then you should be able to visit <http://localhost:4200>!
