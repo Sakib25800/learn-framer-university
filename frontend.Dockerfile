@@ -34,11 +34,11 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Build application
+ARG NEXT_PUBLIC_APP_ENV
 RUN pnpm exec next build
 
 # Remove development dependencies
 RUN pnpm prune --prod
-
 
 # Final stage for app image
 FROM base
