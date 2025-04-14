@@ -2,18 +2,21 @@ import fs from "fs/promises"
 import path from "path"
 
 /**
- * Read the latest email from the /tmp directory.
+ * Read the latest email from the temporary directory.
+ * Uses GitHub Actions runner.temp if available, falls back to /tmp for local development
  */
 export const readLatestEmail = async () => {
   try {
-    const files = await fs.readdir("/tmp")
+    const tempDir = process.env.RUNNER_TEMP || "/tmp"
+
+    const files = await fs.readdir(tempDir)
     const emailFiles = files.filter((file) => file.endsWith(".eml"))
 
     if (emailFiles.length === 0) return null
 
     const fileStats = await Promise.all(
       emailFiles.map(async (file) => {
-        const stat = await fs.stat(path.join("/tmp", file))
+        const stat = await fs.stat(path.join(tempDir, file))
         return {
           name: file,
           ctime: stat.ctime,
@@ -25,10 +28,10 @@ export const readLatestEmail = async () => {
 
     if (!latestFile) return null
 
-    const content = await fs.readFile(path.join("/tmp", latestFile), "utf-8")
+    const content = await fs.readFile(path.join(tempDir, latestFile), "utf-8")
 
     // Delete file
-    await fs.unlink(path.join("/tmp", latestFile))
+    await fs.unlink(path.join(tempDir, latestFile))
 
     return content
   } catch (err) {
