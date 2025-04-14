@@ -63,17 +63,11 @@ npx openapi-typescript ./shared/api/openapi.json -o ./shared/api/v1.d.ts
 
 learn.framer.university is deployed on [Fly](https://fly.io/).
 
-- `fly.api.toml` - Fly config for production API
-- `fly.staging.api.toml` - Fly config for the staging API
-
 - `fly.frontend.toml` - Fly config for production frontend
-- `fly.staging.frontend.toml` - Fly config for staging frontend
+- `frontend.Dockerfile` - Unified Dockerfile config for frontend with environment-specific build arguments
 
-- `api.Dockerfile` - Dockerfile config for production API
-- `api.staging.Dockerfile` - Dockerfile config for the staging API
-
-- `frontend.Dockerfile` - Dockerfile config for production frontend
-- `frontend.staging.Dockerfile` - Dockerfile config for staging frontend
+- `fly.api.toml` - Fly config for production API
+- `api.Dockerfile` - Unified Dockerfile config for API with environment-specific build arguments
 
 ## Development
 
