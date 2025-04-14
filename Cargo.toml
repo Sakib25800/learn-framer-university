@@ -61,11 +61,11 @@ time = {version = "0.3.37", features = ["serde"]}
 config = "0.15.6"
 dotenvy = "0.15.7"
 anyhow = "1.0.95"
-prometheus = "0.13.4"
+prometheus = "0.14.0"
 utoipa = {version="5.3.1", features = ["chrono"]}
 utoipa-axum = "0.2.0"
-derive_more = {version="1.0.0",features = ["deref"]}
-sentry ={version= "0.36.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
+derive_more = {version="2.0.1",features = ["deref"]}
+sentry ={version= "0.37.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
 json-subscriber = "0.2.4"
 chrono = {version = "0.4.39", features = ["serde"]}
 diesel = { version = "2.2.7", features = ["postgres", "serde_json", "chrono", "numeric"] }
@@ -80,7 +80,7 @@ log = "0.4"
 axum-test = "17.2.0"
 lettre = { version = "0.11.12", default-features = false, features = ["file-transport", "smtp-transport", "hostname", "builder", "tokio1", "tokio1-native-tls"] }
 rand = "0.9.0"
-thiserror = "2.0.11"
+thiserror = "2.0.12"
 regex = "1.11.1"
 insta = { version = "1.42.1", features = ["glob", "json", "redactions"] }
 utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
