@@ -1,5 +1,7 @@
-CREATE TABLE accounts (
-    id bigserial primary key,
+CREATE TYPE auth_method_enum AS ENUM ('email', 'oauth');
+
+CREATE TABLE IF NOT EXISTS accounts (
+    id bigserial PRIMARY KEY,
     user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     auth_method auth_method_enum NOT NULL,
     provider text NOT NULL,
@@ -13,7 +15,5 @@ CREATE TABLE accounts (
     UNIQUE(provider, provider_account_id)
 );
 
-CREATE INDEX accounts_user_id_idx ON accounts(user_id);
-CREATE INDEX accounts_provider_account_id_idx ON accounts(provider_account_id);
-
-SELECT add_timestamps_trigger('accounts'::regclass);
+CREATE INDEX IF NOT EXISTS accounts_user_id_idx ON accounts(user_id);
+SELECT create_timestamp_triggers('accounts');
