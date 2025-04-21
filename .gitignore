@@ -36,7 +36,7 @@ src/yarn-error.log*
 src/.pnpm-debug.log*
 
 # Environment variables
-.env*
+.env
 
 # TypeScript
 *.tsbuildinfo

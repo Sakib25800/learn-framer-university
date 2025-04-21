@@ -1,8 +1,20 @@
 # lfu_database
 
-This package contains the database schema as derived by `diesel print-schema` from the databse after all migrations have been applied.
+This package provides access to the learn.framer.university database.
 
-After creating new migrations (via `diesel migration generate`), update the schema by executing:
+1) Generate a new migration
+    ```console
+    $ cargo sqlx migrate add <new-migration>
+    ```
+2) Change the migration manually in `migrations/<timestamp>-<new-migration>.sql`.
+3) Apply migrations to the **Postgres** DB.
+    ```console
+    $ cargo sqlx migrate run
+    ```
+
+### Generate `.sqlx` directory
 ```console
-diesel print-schema > crates/lfu_database/src/schema.rs
+$ cargo sqlx prepare -- --package lfu_database --all-targets
 ```
+
+You should also commit the changes to the `.sqlx` directory.

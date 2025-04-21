@@ -1,10 +1,11 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, ToSchema)]
 pub struct Me {
-    pub id: i64,
+    pub id: Uuid,
     pub email: String,
     pub email_verified: Option<DateTime<Utc>>,
     pub image: Option<String>,

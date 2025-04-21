@@ -1,18 +1,14 @@
 use axum::Json;
 use chrono::Utc;
+use lfu_database::models::user::UserRole;
 use serde::Deserialize;
 use utoipa::ToSchema;
 use validator::Validate;
 
-use lfu_database::models::{
-    refresh_token::NewRefreshToken,
-    user::{NewUser, User},
-    verification_token::{NewVerificationToken, VerificationToken},
-};
-
 use crate::{
     app::AppState,
     auth::generate_access_token,
+    config::Server,
     middleware::{json::JsonBody, path::ValidatedPath},
     util::errors::{unauthorized, AppErrorResponse, AppResult},
     views::{MessageResponse, VerifiedEmailResponse},
@@ -45,24 +41,24 @@ pub async fn signin(
     state: AppState,
     JsonBody(body): JsonBody<AuthSignInBody>,
 ) -> AppResult<Json<MessageResponse>> {
-    let mut conn = state.database.get().await?;
+    let db = state.db();
     let email = &body.email;
 
-    match User::find_by_email(email, &mut conn).await {
+    match db.users.find_by_email(email).await {
         Ok(user) => {
-            // Revoke all previously generated verification tokens
-            VerificationToken::delete_all(&user.email, &mut conn).await?;
+            db.verification_tokens.delete_all(email).await?;
             user
         }
-        Err(_) => NewUser::new(&body.email, false).insert(&mut conn).await?,
+        Err(_) => db.users.create(email, UserRole::User).await?,
     };
 
-    let verification_token = NewVerificationToken::new(
-        email.to_owned(),
-        state.config.email_verification_expiration_hours,
-    )
-    .create(&mut conn)
-    .await?;
+    let verification_token = db
+        .verification_tokens
+        .create(
+            email.to_owned(),
+            state.config.email_verification_expiration_hours,
+        )
+        .await?;
 
     let signin_email = AuthSignInEmail {
         app_url: &state.config.app_url,
@@ -100,38 +96,48 @@ pub async fn continue_signin(
     ValidatedPath(params): ValidatedPath<AuthSignInParams>,
 ) -> AppResult<Json<VerifiedEmailResponse>> {
     let token = params.token;
-    let mut conn = state.database.get().await?;
+    let db = state.db();
 
-    let verification_token = match VerificationToken::find_by_token(&token, &mut conn).await {
-        Ok(token) => token,
-        Err(_) => return Err(unauthorized("Invalid verification token")),
-    };
+    let verification_token = db
+        .verification_tokens
+        .find_by_token(&token)
+        .await
+        .map_err(|_| unauthorized("Invalid verification token"))?;
 
     if verification_token.expires < Utc::now() {
         return Err(unauthorized("Verification token has expired"));
     }
 
-    let user = match User::find_by_email(&verification_token.identifier, &mut conn).await {
-        Ok(user) => user,
-        Err(_) => return Err(unauthorized("Email does not exist")),
-    };
+    let user = db
+        .users
+        .find_by_email(&verification_token.identifier)
+        .await
+        .map_err(|_| unauthorized("Email does not exist"))?;
 
-    let crate::config::Server {
+    let Server {
         jwt_secret,
         jwt_access_token_expiration_hours,
         jwt_refresh_token_expiration_days,
         ..
     } = state.config.as_ref();
-    let access_token = generate_access_token(jwt_secret, jwt_access_token_expiration_hours, &user)?;
-    let refresh_token = NewRefreshToken::new(user.id, *jwt_refresh_token_expiration_days)
-        .insert(&mut conn)
+    let access_token = generate_access_token(
+        jwt_secret,
+        jwt_access_token_expiration_hours,
+        user.id,
+        user.email,
+    )?;
+    let refresh_token = db
+        .refresh_tokens
+        .create(user.id, *jwt_refresh_token_expiration_days)
         .await?;
 
     // Set user email as verified
-    User::verify_email(user.id, &mut conn).await?;
+    db.users.verify_email(user.id).await?;
 
     // Delete the used verification token
-    VerificationToken::delete(&verification_token.identifier, token.as_str(), &mut conn).await?;
+    db.verification_tokens
+        .delete(&verification_token.identifier, token.as_str())
+        .await?;
 
     Ok(Json(VerifiedEmailResponse {
         access_token,

@@ -1,5 +1,5 @@
 use axum::{Extension, Json};
-use lfu_database::models::user::User;
+use lfu_database::models::user::UserModel;
 
 use crate::{
     util::errors::{AppErrorResponse, AppResult},
@@ -15,13 +15,19 @@ use crate::{
         (status = 400, body = AppErrorResponse, description = "unauthorized")
     )
 )]
-pub async fn me(Extension(user): Extension<User>) -> AppResult<Json<Me>> {
-    let profile = Me {
-        id: user.id,
-        email: user.email,
-        email_verified: user.email_verified,
-        image: user.image,
-    };
+pub async fn me(Extension(user): Extension<UserModel>) -> AppResult<Json<Me>> {
+    let UserModel {
+        id,
+        email,
+        email_verified,
+        image,
+        ..
+    } = user;
 
-    Ok(Json(profile))
+    Ok(Json(Me {
+        id,
+        email,
+        email_verified,
+        image,
+    }))
 }

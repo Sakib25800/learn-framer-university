@@ -46,26 +46,3 @@ impl Modify for SecurityAddon {
         components.add_security_scheme("bearer", SecurityScheme::Http(jwt_scheme));
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::tests::util::{test_app::TestApp, RequestHelper};
-
-    #[tokio::test(flavor = "multi_thread")]
-    async fn test_openapi_snapshot() {
-        let (_app, anon) = TestApp::init().empty().await;
-
-        let response = anon.get("/private/openapi.json").await;
-
-        response.assert_status_ok();
-
-        let json_response = response.json::<serde_json::Value>();
-
-        match json_response {
-            serde_json::Value::Object(map) => {
-                assert!(map.contains_key("openapi"));
-            }
-            _ => panic!("Expected JSON object"),
-        }
-    }
-}

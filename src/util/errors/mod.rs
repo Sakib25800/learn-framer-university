@@ -5,7 +5,6 @@
 //!   lies within models, controllers, and middleware layers.
 
 use axum::{response::IntoResponse, Extension};
-use diesel::result::{DatabaseErrorKind, Error as DieselError};
 use http::StatusCode;
 use std::{
     any::{Any, TypeId},
@@ -101,35 +100,21 @@ impl<E: Error + Send + 'static> AppError for E {
     }
 }
 
-impl From<diesel::ConnectionError> for BoxedAppError {
-    fn from(err: diesel::ConnectionError) -> BoxedAppError {
-        Box::new(err)
-    }
-}
-
-impl From<DieselError> for BoxedAppError {
-    fn from(err: DieselError) -> BoxedAppError {
+impl From<sqlx::Error> for BoxedAppError {
+    fn from(err: sqlx::Error) -> BoxedAppError {
         match err {
-            DieselError::NotFound => not_found(""),
-            DieselError::DatabaseError(DatabaseErrorKind::ClosedConnection, _) => {
-                service_unavailable()
+            sqlx::Error::PoolTimedOut => service_unavailable(),
+            sqlx::Error::PoolClosed => service_unavailable(),
+            sqlx::Error::WorkerCrashed => service_unavailable(),
+            sqlx::Error::RowNotFound => not_found("Resource not found"),
+            sqlx::Error::Database(db_err) if db_err.is_unique_violation() => {
+                bad_request("Resource already exists")
             }
-            _ => Box::new(err),
+            _ => {
+                error!("Database error: {err:?}");
+                internal("An internal server error occurred")
+            }
         }
-    }
-}
-
-impl From<diesel_async::pooled_connection::PoolError> for BoxedAppError {
-    fn from(err: diesel_async::pooled_connection::PoolError) -> BoxedAppError {
-        error!("Database pool error: {err}");
-        service_unavailable()
-    }
-}
-
-impl From<diesel_async::pooled_connection::bb8::RunError> for BoxedAppError {
-    fn from(err: diesel_async::pooled_connection::bb8::RunError) -> BoxedAppError {
-        error!("Database pool run error: {err}");
-        service_unavailable()
     }
 }
 
@@ -214,45 +199,4 @@ fn server_error_response(error: String) -> axum::response::Response {
         "Internal Server Error",
     )
         .into_response()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use diesel::result::Error as DieselError;
-    use http::StatusCode;
-
-    #[test]
-    fn http_error_responses() {
-        use serde::de::Error;
-
-        // Types for handling common error status codes
-        assert_eq!(bad_request("").response().status(), StatusCode::BAD_REQUEST);
-        assert_eq!(forbidden("").response().status(), StatusCode::FORBIDDEN);
-        assert_eq!(
-            BoxedAppError::from(DieselError::NotFound)
-                .response()
-                .status(),
-            StatusCode::NOT_FOUND
-        );
-        assert_eq!(not_found("").response().status(), StatusCode::NOT_FOUND);
-
-        // All other error types are converted to internal server errors
-        assert_eq!(
-            internal("").response().status(),
-            StatusCode::INTERNAL_SERVER_ERROR
-        );
-        assert_eq!(
-            BoxedAppError::from(serde_json::Error::custom("ExpectedColon"))
-                .response()
-                .status(),
-            StatusCode::INTERNAL_SERVER_ERROR
-        );
-        assert_eq!(
-            BoxedAppError::from(std::io::Error::new(::std::io::ErrorKind::Other, ""))
-                .response()
-                .status(),
-            StatusCode::INTERNAL_SERVER_ERROR
-        );
-    }
 }

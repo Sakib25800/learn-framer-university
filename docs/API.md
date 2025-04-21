@@ -7,7 +7,7 @@ The code to run the server is located in _src/main.rs_. This is where the system
 The server does the following:
 
 1. Initialize logging
-2. Run pending database migrations using `diesel_migrations`
+2. Run pending database migrations using `sqlx-cli`
 3. Read values from environment variables to configure a new instance of `framer_university::App`
 4. Adds middleware to the app by calling `framer_university::middleware`
 5. Starts a [hyper](https://crates.io/crates/hyper) server
@@ -42,22 +42,6 @@ This contains the `App` struct, which holds a `Config` instance plugin other app
 This module contains the `Config` struct, which holds values read from environment variables e.g. `allowed_origins`.
 
 See `.env.sample` for an example of what should be in the env file.
-
-### `db`
-
-This module is responsible for managing database connections and migrations.
-
-- **Database Connection Pool**: The connection pool is managed using `bb8` and `diesel_async`
-- **Database Migrations**: The database migrations are managed using `diesel_migrations`
-- **Database Configuration**: The database configuration is managed using `diesel_config` and is read from the environment. The settings include:
-
-  - `database_url`: The URL of the database.
-  - `connection_timeout_seconds`: The timeout duration for database connections in seconds.
-  - `pool_size`: The size of the database connection pool.
-
-### `model`
-
-This module contains the data models used in the application. These models represent the structure of the data stored in the database and are defined using Diesel ORM.
 
 ## Tests
 
