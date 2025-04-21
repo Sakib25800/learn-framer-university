@@ -9,5 +9,4 @@ workspace = true
 [dependencies]
 sqlx = { version = "0.8.5", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "uuid"] }
 uuid = { version = "1.16.0", features = ["v4"]}
-anyhow = "1.0.98"
 chrono = "0.4.40"

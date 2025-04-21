@@ -45,51 +45,72 @@ similar.opt-level = 3
 opt-level = 2
 
 [dependencies]
+# Web
 axum = {version = "0.8.1", features = ["macros"]}
+axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.2", features = ["add-extension", "fs", "catch-panic", "timeout", "compression-full", "cors"] }
 http = "1.2.0"
-jsonwebtoken = "9.3.0"
+
+# Async
 tokio = {version = "1.43.0", features = ["full"]}
+
+# Serde
 serde = {version = "1.0.217", features = ["derive"]}
 serde_json = "1.0.137"
-metrics = {version="0.24.1", default-features = false}
+serde_urlencoded = "0.7.1"
+
+# Database
+sqlx = { version = "0.8.5", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "uuid"] }
+
+# Error
+anyhow = "1.0.95"
+thiserror = "2.0.12"
+
+# Logging
 tracing = "0.1.41"
 tracing-subscriber = {version="0.3.19", features = ["env-filter", "json"]}
-validator = {version = "0.20.0", features = ["derive"]}
-time = {version = "0.3.37", features = ["serde"]}
+log = "0.4"
+json-subscriber = "0.2.4"
+sentry = {version= "0.37.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
+
+# Monitoring
+metrics = {version="0.24.1", default-features = false}
+prometheus = "0.14.0"
+
+# Configuration
 config = "0.15.6"
 dotenvy = "0.15.7"
-anyhow = "1.0.95"
-prometheus = "0.14.0"
+env-var = "1"
+
+# Authentication
+jsonwebtoken = "9.3.0"
+
+# OpenAPI
 utoipa = {version="5.3.1", features = ["chrono", "uuid"]}
 utoipa-axum = "0.2.0"
-derive_more = {version="2.0.1",features = ["deref"]}
-sentry ={version= "0.37.0", features = ["tracing", "tower", "tower-axum-matched-path", "tower-http"] }
-json-subscriber = "0.2.4"
-chrono = {version = "0.4.39", features = ["serde"]}
-sqlx = { version = "0.8.5", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "uuid"] }
-uuid = "1.16.0"
-axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
-parking_lot = "0.12.3"
-serde_urlencoded = "0.7.1"
-env-var = "1"
-log = "0.4"
-axum-test = "17.2.0"
-lettre = { version = "0.11.12", default-features = false, features = ["file-transport", "smtp-transport", "hostname", "builder", "tokio1", "tokio1-native-tls"] }
-rand = "0.9.0"
-thiserror = "2.0.12"
-regex = "1.11.1"
-insta = { version = "1.42.1", features = ["glob", "json", "redactions"] }
 utoipa-swagger-ui = {version="9.0.0", features = ["axum"]}
-lfu_database = { path = "crates/lfu_database" }
-reqwest = "0.12.12"
+
+# Time
+time = {version = "0.3.37", features = ["serde"]}
+chrono = {version = "0.4.39", features = ["serde"]}
+
+# Utilities
+validator = {version = "0.20.0", features = ["derive"]}
+uuid = "1.16.0"
+parking_lot = "0.12.3"
+derive_more = {version="2.0.1",features = ["deref"]}
+rand = "0.9.0"
 colored = "3.0.0"
-futures-util = "0.3.31"
-rustls-platform-verifier = "0.5.0"
-rustls = "0.23.23"
-tokio-postgres-rustls = "0.13.0"
-tokio-postgres = "0.7.13"
+
+# Email
+lettre = { version = "0.11.12", default-features = false, features = ["file-transport", "smtp-transport", "hostname", "builder", "tokio1", "tokio1-native-tls"] }
+
+# HTTP client
+reqwest = "0.12.12"
+
+# Crates
+lfu_database = { path = "crates/lfu_database" }
 
 [dev-dependencies]
 bytes = "1.9.0"
