@@ -111,8 +111,11 @@ reqwest = "0.12.12"
 
 # Crates
 lfu_database = { path = "crates/lfu_database" }
+
+# Test
 axum-test = "17.3.0"
 regex = "1.11.1"
+insta = { version = "1.42.2", features = ["glob", "json", "redactions"] }
 
 [dev-dependencies]
 bytes = "1.9.0"
