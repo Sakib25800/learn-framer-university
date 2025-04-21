@@ -1,5 +1,6 @@
 pub use app::TestApp;
 use axum_test::{TestRequest, TestServer};
+pub use user::{MockAdmin, MockAnonymous, MockUser};
 
 mod app;
 mod user;

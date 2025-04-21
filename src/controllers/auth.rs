@@ -163,3 +163,71 @@ impl crate::email::Email for AuthSignInEmail<'_> {
         )
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::tests::mocks::{MockAnonymous, RequestHelper, TestApp};
+    use axum_test::TestResponse;
+    use insta::assert_snapshot;
+    use serde_json::json;
+
+    async fn signin_request(
+        pool: sqlx::PgPool,
+        body: serde_json::Value,
+    ) -> (TestApp, MockAnonymous, TestResponse) {
+        let (app, anon) = TestApp::init().empty(pool).await;
+        let res = anon.post("/v1/auth/signin").json(&body).await;
+        (app, anon, res)
+    }
+
+    fn extract_token_from_signin_email(emails: &[String]) -> String {
+        let body = emails
+            .iter()
+            .find(|m| m.contains("Subject: Activation link for Framer University"))
+            .expect("Missing email");
+
+        let after_prefix = body
+            .split("/continue/")
+            .nth(1)
+            .expect("Couldn't find token start");
+
+        let token = after_prefix
+            .split_whitespace()
+            .next()
+            .expect("Couldn't find token end");
+
+        token.to_string()
+    }
+
+    #[sqlx::test]
+    async fn signin_success_response(pool: sqlx::PgPool) {
+        let (_app, _anon, res) = signin_request(
+            pool,
+            json!({
+                "email": "new_user@example.com"
+            }),
+        )
+        .await;
+
+        res.assert_status_ok();
+        res.assert_json(&json!({
+            "message": "We've sent you an email",
+        }));
+    }
+
+    #[sqlx::test]
+    async fn signin_sends_email(pool: sqlx::PgPool) {
+        let (app, _anon, _res) = signin_request(
+            pool,
+            json!({
+                "email": "new_user@example.com"
+            }),
+        )
+        .await;
+
+        assert_snapshot!(app.emails_snapshot().await);
+
+        let emails = app.emails().await;
+        let _token = extract_token_from_signin_email(&emails);
+    }
+}
