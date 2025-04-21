@@ -19,3 +19,30 @@ pub async fn health_check() -> AppResult<Json<MessageResponse>> {
         message: "Ok".to_string(),
     }))
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::tests::mocks::{RequestHelper, TestApp};
+    use serde_json::json;
+
+    #[sqlx::test]
+    async fn health_check(pool: sqlx::PgPool) {
+        let (_, anon) = TestApp::init().empty(pool).await;
+
+        let res = anon.get("/").await;
+
+        res.assert_json(&json!({
+            "message": "Ok"
+        }));
+    }
+
+    // #[sqlx::test]
+    // async fn health_check_alt(pool: sqlx::PgPool) {
+    //     run_test(pool, |app, anon| async {
+    //         anon.get("/").await.assert_json(&json!({
+    //             "message": "Ok"
+    //         }));
+    //     })
+    //     .await
+    // }
+}
