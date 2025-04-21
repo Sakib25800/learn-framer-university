@@ -19,7 +19,7 @@ These files and directories have to do with the backend:
 - `Cargo.lock` - Locks dependencies to specific versions providing consistency across development
   and deployment
 - `Cargo.toml` - Defines the crate and its dependencies
-- `migrations/` - Diesel migrations applied to the database during development and deployment
+- `migrations/` - SQL migrations applied to the database during development and deployment
 - `src/` - The API's source code
 - `target/` - Compiled output, including dependencies and final binary artifacts - (ignored in
   `.gitignore`)

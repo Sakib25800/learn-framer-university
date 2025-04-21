@@ -67,7 +67,7 @@ In order to run the backend, you will need to have installed:
 - [rustup](https://rustup.rs/) is the Rust installer
 - [Rust](https://www.rust-lang.org/en-US/) and cargo, which comes with Rust
 - [Postgres](https://www.postgresql.org/) is the database
-- [diesel_cli](http://diesel.rs/guides/getting-started/) is the database migration tool / ORM
+- [sqlx](https://github.com/launchbadge/sqlx) is the database migration tool / ORM
 
 ##### Postgres
 
@@ -95,10 +95,11 @@ To create a new Postgres database, run the following command:
 createdb <database_name>
 ```
 
-#### `diesel_cli`
+#### `sqlx-cli`
 
+You must have `sqlx-cli` installed for the following commands to work.
 ```console
-cargo install diesel_cli --no-default-features --features postgres
+$ cargo install sqlx-cli --no-default-features --features native-tls,postgres
 ```
 
 #### Building and serving the Backend
@@ -156,8 +157,6 @@ You will need to add the following: `MAILGUN_SMTP_LOGIN`, `MAILGUN_SMTP_PASSWORD
 `MAILGUN_SMTP_SERVER` fields.
 
 #### Running the Backend tests
-
-In the `.env` file, be sure to set the `TEST_DATABASE_URL`.
 
 To run the tests, run the following:
 

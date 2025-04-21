@@ -15,4 +15,6 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS verification_tokens_token_idx ON verification_tokens(token);
+CREATE INDEX IF NOT EXISTS verification_tokens_expires_idx ON verification_tokens(expires);
+
 SELECT create_timestamp_triggers('verification_tokens');

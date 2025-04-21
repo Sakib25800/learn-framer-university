@@ -17,8 +17,6 @@ pub mod middleware;
 pub mod openapi;
 pub mod router;
 pub mod sentry;
-#[cfg(test)]
-pub mod tests;
 pub mod util;
 pub mod views;
 

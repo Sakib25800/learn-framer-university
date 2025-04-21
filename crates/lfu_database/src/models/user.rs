@@ -1,63 +1,135 @@
-use crate::schema::users;
-use bon::Builder;
 use chrono::{DateTime, Utc};
-use diesel::prelude::*;
-use diesel_async::{AsyncPgConnection, RunQueryDsl};
+use sqlx::PgPool;
+use uuid::Uuid;
 
-/// The model representing a row in the `users` database table.
-#[derive(Clone, Debug, Queryable, Identifiable, Selectable)]
-pub struct User {
-    pub id: i64,
+use crate::DbResult;
+
+#[derive(Debug, Clone, PartialEq, sqlx::Type)]
+#[sqlx(type_name = "TEXT", rename_all = "lowercase")]
+pub enum UserRole {
+    User,
+    Admin,
+}
+
+#[derive(Debug, Clone)]
+pub struct UserModel {
+    pub id: Uuid,
     pub email: String,
     pub email_verified: Option<DateTime<Utc>>,
     pub image: Option<String>,
-    pub is_admin: bool,
-    pub last_active_at: DateTime<Utc>,
+    pub role: UserRole,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
 
-impl User {
-    pub async fn find(id: i64, conn: &mut AsyncPgConnection) -> QueryResult<User> {
-        users::table.find(id).first(conn).await
-    }
-
-    pub async fn find_by_email(email_str: &str, conn: &mut AsyncPgConnection) -> QueryResult<User> {
-        users::table
-            .filter(users::email.eq(email_str))
-            .first(conn)
-            .await
-    }
-
-    pub async fn verify_email(id: i64, conn: &mut AsyncPgConnection) -> QueryResult<User> {
-        diesel::update(users::table)
-            .filter(users::id.eq(id))
-            .set(users::email_verified.eq(Some(chrono::Utc::now().naive_utc())))
-            .returning(User::as_returning())
-            .get_result(conn)
-            .await
-    }
+#[derive(Debug, Clone)]
+pub struct Users {
+    pool: PgPool,
 }
 
-/// Represents a new user to be inserted into the database.
-#[derive(Insertable, Debug, Builder)]
-#[diesel(table_name = users, check_for_backend(diesel::pg::Pg))]
-pub struct NewUser<'a> {
-    pub email: &'a str,
-    #[builder(default = false)]
-    pub is_admin: bool,
-}
-
-impl<'a> NewUser<'a> {
-    pub fn new(email: &'a str, is_admin: bool) -> Self {
-        NewUser { email, is_admin }
+impl Users {
+    pub fn new(pool: PgPool) -> Self {
+        Self { pool }
     }
 
-    pub async fn insert(&self, conn: &mut AsyncPgConnection) -> QueryResult<User> {
-        diesel::insert_into(users::table)
-            .values(self)
-            .returning(User::as_returning())
-            .get_result(conn)
-            .await
+    pub async fn create(&self, email: &str, role: UserRole) -> DbResult<UserModel> {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+            INSERT INTO users (email, role)
+            VALUES ($1, $2)
+            RETURNING
+                id,
+                email,
+                email_verified,
+                image,
+                role AS "role: UserRole",
+                created_at,
+                updated_at
+            "#,
+            email,
+            role as _
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(user)
+    }
+
+    pub async fn find(&self, id: Uuid) -> DbResult<UserModel> {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+            SELECT
+                id,
+                email,
+                email_verified,
+                image,
+                role AS "role: UserRole",
+                created_at,
+                updated_at
+            FROM users
+            WHERE id = $1
+            "#,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(user)
+    }
+
+    pub async fn find_by_email(&self, email_str: &str) -> DbResult<UserModel> {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+            SELECT
+                id,
+                email,
+                email_verified,
+                image,
+                role AS "role: UserRole",
+                created_at,
+                updated_at
+            FROM users
+            WHERE email = $1
+            "#,
+            email_str
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(user)
+    }
+
+    pub async fn verify_email(&self, id: Uuid) -> DbResult<UserModel> {
+        let user = sqlx::query_as!(
+            UserModel,
+            r#"
+            UPDATE users
+            SET email_verified = CURRENT_TIMESTAMP
+            WHERE id = $1
+            RETURNING
+                id,
+                email,
+                email_verified,
+                image,
+                role AS "role: UserRole",
+                created_at,
+                updated_at
+            "#,
+            id
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(user)
+    }
+
+    pub async fn count(&self) -> DbResult<Option<i64>> {
+        let count = sqlx::query_scalar!(
+            r#"
+            SELECT COUNT(*) FROM users
+            "#
+        )
+        .fetch_one(&self.pool)
+        .await?;
+        Ok(count)
     }
 }

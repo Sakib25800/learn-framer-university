@@ -34,10 +34,7 @@ pub async fn prometheus(
     }
 
     let metrics: Vec<MetricFamily> = match kind.as_str() {
-        "service" => {
-            let mut conn = state.database.get().await?;
-            state.service_metrics.gather(&mut conn).await?
-        }
+        "service" => state.service_metrics.gather(state.db()).await?,
         "instance" => spawn_blocking(move || state.instance_metrics.gather(&state)).await??,
         _ => return Err(not_found("Metrics type not found")),
     };

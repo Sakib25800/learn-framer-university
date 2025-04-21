@@ -6,14 +6,15 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TABLE IF NOT EXISTS refresh_tokens (
-    id bigserial primary key,
-    user_id bigint NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     token text NOT NULL UNIQUE DEFAULT generate_refresh_token(),
-    expires timestamptz NOT NULL,
-    created_at timestamptz NOT NULL DEFAULT now(),
-    updated_at timestamptz NOT NULL DEFAULT now()
+    expires TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS refresh_tokens_token_idx ON refresh_tokens(token);
 CREATE INDEX IF NOT EXISTS refresh_tokens_user_id_idx ON refresh_tokens(user_id);
+CREATE INDEX IF NOT EXISTS refresh_tokens_expires_idx ON refresh_tokens(expires);
 SELECT create_timestamp_triggers('refresh_tokens');

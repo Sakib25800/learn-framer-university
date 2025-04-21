@@ -1,28 +1,17 @@
 use axum::extract::{FromRequestParts, State};
 use derive_more::Deref;
-use diesel::pg::PgConnection;
-use diesel::{Connection, ConnectionError, ConnectionResult};
-use diesel_async::pooled_connection::bb8::Pool;
-use diesel_async::pooled_connection::{AsyncDieselConnectionManager, ManagerConfig};
-use diesel_async::AsyncPgConnection;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
-use futures_util::future::BoxFuture;
-use futures_util::FutureExt;
-use rustls::ClientConfig;
-use rustls_platform_verifier::ConfigVerifierExt;
+use lfu_database::PgDbClient;
+use sqlx::postgres::PgPoolOptions;
 use std::sync::Arc;
 use std::time::Duration;
 
 use crate::config::{self};
 use crate::email::Emails;
 use crate::metrics::{InstanceMetrics, ServiceMetrics};
-use crate::Env;
-
-pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations/");
 
 pub struct App {
-    /// Database connection pool
-    pub database: Pool<AsyncPgConnection>,
+    /// Database client
+    pub db: PgDbClient,
 
     /// Server configuration
     pub config: Arc<config::Server>,
@@ -42,49 +31,27 @@ impl App {
         let instance_metrics =
             InstanceMetrics::new().expect("could not initialise instance metrics");
 
-        if config.env != Env::Test {
-            let mut conn = PgConnection::establish(&config.database_url)
-                .expect("failed to connect to database");
-            conn.run_pending_migrations(MIGRATIONS)
-                .expect("failed to run migrations");
-        }
-
-        let mut manager_config = ManagerConfig::default();
-        manager_config.custom_setup = Box::new(establish_connection);
-
-        let manager = AsyncDieselConnectionManager::<AsyncPgConnection>::new_with_config(
-            &config.database_url,
-            manager_config,
-        );
-
-        let pool = Pool::builder()
-            .max_size(config.pool_size)
-            .connection_timeout(Duration::from_secs(config.connection_timeout_seconds))
-            .build(manager)
+        let pool = PgPoolOptions::new()
+            .max_connections(5)
+            .acquire_timeout(Duration::from_secs(config.connection_timeout_seconds))
+            .connect(&config.database_url)
             .await
-            .unwrap();
+            .expect("Failed to connect to database");
+
+        sqlx::migrate!().run(&pool).await.unwrap();
 
         App {
             instance_metrics,
             emails,
-            database: pool,
+            db: PgDbClient::new(pool),
             config: Arc::new(config),
-            service_metrics: ServiceMetrics::new().expect("could not intialise service metrics"),
+            service_metrics: ServiceMetrics::new().expect("Failed to intialise service metrics"),
         }
     }
-}
 
-fn establish_connection(config: &str) -> BoxFuture<ConnectionResult<AsyncPgConnection>> {
-    let fut = async {
-        let rustls_config = ClientConfig::with_platform_verifier();
-        let tls = tokio_postgres_rustls::MakeRustlsConnect::new(rustls_config);
-        let (client, conn) = tokio_postgres::connect(config, tls)
-            .await
-            .map_err(|e| ConnectionError::BadConnection(e.to_string()))?;
-
-        AsyncPgConnection::try_from_client_and_connection(client, conn).await
-    };
-    fut.boxed()
+    pub fn db(&self) -> &PgDbClient {
+        &self.db
+    }
 }
 
 #[derive(Clone, FromRequestParts, Deref)]

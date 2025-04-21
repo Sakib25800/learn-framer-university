@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM verification_tokens\n            WHERE identifier = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "20a27b6df32720290c830b6d68feeaa40d86c0c180f270733ca81c995ae0102b"
+}

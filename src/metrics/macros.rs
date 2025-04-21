@@ -27,6 +27,7 @@ macro_rules! metrics {
         $vis struct $name {
             registry: prometheus::Registry,
             $(
+                #[doc = $help]
                 $(#[$meta])*
                 $metric_vis $metric: $ty,
             )*
@@ -37,19 +38,16 @@ macro_rules! metrics {
 
                 let registry = prometheus::Registry::new();
                 $(
-                    $(#[$meta])*
                     let $metric = <$ty>::from_opts(
                         prometheus::Opts::new(stringify!($metric), $help)
                             .namespace($namespace)
                             $(.variable_labels(vec![$($label.into()),*]))?
                     )?;
-                    $(#[$meta])*
                     registry.register(Box::new($metric.clone()))?;
                 )*
                 Ok(Self {
                     registry,
                     $(
-                        $(#[$meta])*
                         $metric,
                     )*
                 })
