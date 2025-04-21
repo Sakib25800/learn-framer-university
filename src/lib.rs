@@ -4,7 +4,9 @@ use app::AppState;
 use router::build_axum_router;
 use std::sync::Arc;
 
-pub use crate::{app::App, email::Emails};
+use crate::app::App;
+pub use crate::config::Server;
+pub use crate::email::Emails;
 
 pub mod app;
 pub mod auth;
@@ -17,6 +19,8 @@ pub mod middleware;
 pub mod openapi;
 pub mod router;
 pub mod sentry;
+#[cfg(test)]
+pub mod tests;
 pub mod util;
 pub mod views;
 

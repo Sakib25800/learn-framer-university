@@ -27,10 +27,7 @@ pub struct App {
 }
 
 impl App {
-    pub async fn new(config: config::Server, emails: Emails) -> App {
-        let instance_metrics =
-            InstanceMetrics::new().expect("could not initialise instance metrics");
-
+    pub async fn build(config: config::Server, emails: Emails) -> App {
         let pool = PgPoolOptions::new()
             .max_connections(5)
             .acquire_timeout(Duration::from_secs(config.connection_timeout_seconds))
@@ -40,12 +37,15 @@ impl App {
 
         sqlx::migrate!().run(&pool).await.unwrap();
 
+        let instance_metrics = InstanceMetrics::new().expect("Failed to initialise metrics");
+        let service_metrics = ServiceMetrics::new().expect("Failed to intialise service metrics");
+
         App {
             instance_metrics,
+            service_metrics,
             emails,
             db: PgDbClient::new(pool),
             config: Arc::new(config),
-            service_metrics: ServiceMetrics::new().expect("Failed to intialise service metrics"),
         }
     }
 
