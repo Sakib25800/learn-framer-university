@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id,\n                email,\n                email_verified,\n                image,\n                role AS \"role: UserRole\",\n                created_at,\n                updated_at\n            FROM users\n            WHERE email = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "email",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "email_verified",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 3,
+        "name": "image",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "role: UserRole",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      true,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "eb726b812300c60b86e03578cde0349c8793d812dae5e9869c4c1e7ddf5795ed"
+}
