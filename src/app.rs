@@ -2,6 +2,7 @@ use axum::extract::{FromRequestParts, State};
 use derive_more::Deref;
 use lfu_database::PgDbClient;
 use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -27,25 +28,26 @@ pub struct App {
 }
 
 impl App {
-    pub async fn build(config: config::Server, emails: Emails) -> App {
-        let pool = PgPoolOptions::new()
-            .max_connections(5)
-            .acquire_timeout(Duration::from_secs(config.connection_timeout_seconds))
-            .connect(&config.database_url)
-            .await
-            .expect("Failed to connect to database");
+    pub async fn build(config: config::Server, emails: Emails, pool: Option<PgPool>) -> App {
+        let pool = if let Some(pool) = pool {
+            pool
+        } else {
+            PgPoolOptions::new()
+                .max_connections(5)
+                .acquire_timeout(Duration::from_secs(config.connection_timeout_seconds))
+                .connect(&config.database_url)
+                .await
+                .expect("Failed to connect to database")
+        };
 
         sqlx::migrate!().run(&pool).await.unwrap();
 
-        let instance_metrics = InstanceMetrics::new().expect("Failed to initialise metrics");
-        let service_metrics = ServiceMetrics::new().expect("Failed to intialise service metrics");
-
         App {
-            instance_metrics,
-            service_metrics,
             emails,
             db: PgDbClient::new(pool),
             config: Arc::new(config),
+            instance_metrics: InstanceMetrics::new().expect("Failed to initialise metrics"),
+            service_metrics: ServiceMetrics::new().expect("Failed to intialise service metrics"),
         }
     }
 

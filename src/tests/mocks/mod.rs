@@ -1,9 +1,10 @@
 pub use app::TestApp;
 use axum_test::{TestRequest, TestServer};
-pub use user::{MockAdmin, MockAnonymous, MockUser};
+use lfu_database::models::user::UserModel;
+
+use crate::auth::Tokens;
 
 mod app;
-mod user;
 
 pub trait RequestHelper {
     fn server(&self) -> &TestServer;
@@ -24,13 +25,81 @@ pub trait RequestHelper {
         self.apply_defaults(request)
     }
 
+    #[allow(dead_code)]
     fn put(&self, path: &str) -> TestRequest {
         let request = self.server().put(path);
         self.apply_defaults(request)
     }
 
+    #[allow(dead_code)]
     fn delete(&self, path: &str) -> TestRequest {
         let request = self.server().delete(path);
         self.apply_defaults(request)
+    }
+}
+
+pub struct MockUser {
+    app: TestApp,
+    user: UserModel,
+    tokens: Tokens,
+}
+
+impl MockUser {
+    pub fn as_model(&self) -> &UserModel {
+        &self.user
+    }
+}
+
+impl RequestHelper for MockUser {
+    fn server(&self) -> &TestServer {
+        self.app().server()
+    }
+
+    fn app(&self) -> &TestApp {
+        &self.app
+    }
+
+    fn apply_defaults(&self, request: TestRequest) -> TestRequest {
+        request.authorization_bearer(&self.tokens.access_token)
+    }
+}
+
+pub struct MockAdmin {
+    app: TestApp,
+    user: UserModel,
+    tokens: Tokens,
+}
+
+impl MockAdmin {
+    pub fn as_model(&self) -> &UserModel {
+        &self.user
+    }
+}
+
+impl RequestHelper for MockAdmin {
+    fn server(&self) -> &TestServer {
+        self.app().server()
+    }
+
+    fn app(&self) -> &TestApp {
+        &self.app
+    }
+
+    fn apply_defaults(&self, request: TestRequest) -> TestRequest {
+        request.authorization_bearer(&self.tokens.access_token)
+    }
+}
+
+pub struct MockAnonymous {
+    app: TestApp,
+}
+
+impl RequestHelper for MockAnonymous {
+    fn server(&self) -> &TestServer {
+        self.app().server()
+    }
+
+    fn app(&self) -> &TestApp {
+        &self.app
     }
 }

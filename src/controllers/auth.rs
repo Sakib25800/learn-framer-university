@@ -44,13 +44,9 @@ pub async fn signin(
     let db = state.db();
     let email = &body.email;
 
-    match db.users.find_by_email(email).await {
-        Ok(user) => {
-            db.verification_tokens.delete_all(email).await?;
-            user
-        }
-        Err(_) => db.users.create(email, UserRole::User).await?,
-    };
+    if let Err(_) = db.users.find_by_email(email).await {
+        db.verification_tokens.delete_all(email).await?;
+    }
 
     let verification_token = db
         .verification_tokens
@@ -105,14 +101,17 @@ pub async fn continue_signin(
         .map_err(|_| unauthorized("Invalid verification token"))?;
 
     if verification_token.expires < Utc::now() {
-        return Err(unauthorized("Verification token has expired"));
+        return Err(unauthorized("Expired verification token"));
     }
 
-    let user = db
-        .users
-        .find_by_email(&verification_token.identifier)
-        .await
-        .map_err(|_| unauthorized("Email does not exist"))?;
+    let user = match db.users.find_by_email(&verification_token.identifier).await {
+        Ok(user) => user,
+        Err(_) => {
+            db.users
+                .create(&verification_token.identifier, UserRole::User)
+                .await?
+        }
+    };
 
     let Server {
         jwt_secret,
@@ -169,12 +168,10 @@ mod tests {
     use crate::tests::mocks::{MockAnonymous, RequestHelper, TestApp};
     use axum_test::TestResponse;
     use insta::assert_snapshot;
-    use serde_json::json;
+    use serde_json::{json, Value};
+    use sqlx::PgPool;
 
-    async fn signin_request(
-        pool: sqlx::PgPool,
-        body: serde_json::Value,
-    ) -> (TestApp, MockAnonymous, TestResponse) {
+    async fn signin_request(pool: PgPool, body: Value) -> (TestApp, MockAnonymous, TestResponse) {
         let (app, anon) = TestApp::init().empty(pool).await;
         let res = anon.post("/v1/auth/signin").json(&body).await;
         (app, anon, res)
@@ -200,11 +197,11 @@ mod tests {
     }
 
     #[sqlx::test]
-    async fn signin_success_response(pool: sqlx::PgPool) {
-        let (_app, _anon, res) = signin_request(
+    async fn signin_valid_email_success(pool: PgPool) {
+        let (_, _, res) = signin_request(
             pool,
             json!({
-                "email": "new_user@example.com"
+                "email": "unverified@example.com"
             }),
         )
         .await;
@@ -216,18 +213,213 @@ mod tests {
     }
 
     #[sqlx::test]
-    async fn signin_sends_email(pool: sqlx::PgPool) {
-        let (app, _anon, _res) = signin_request(
+    async fn signin_existing_user_success(pool: PgPool) {
+        let (_, _, user) = TestApp::init().with_user(pool).await;
+
+        let res = user
+            .post("/v1/auth/signin")
+            .json(&json!({
+                "email": "verified@example.com"
+            }))
+            .await;
+
+        res.assert_status_ok();
+    }
+
+    #[sqlx::test]
+    async fn signin_deletes_existing_tokens(pool: PgPool) {
+        let email = "user@example.com";
+
+        let (app, anon) = TestApp::init().empty(pool).await;
+
+        anon.post("/v1/auth/signin")
+            .json(&json!({
+                "email": email
+            }))
+            .await;
+        anon.post("/v1/auth/signin")
+            .json(&json!({
+                "email": email
+            }))
+            .await;
+
+        app.db()
+            .verification_tokens
+            .count()
+            .await
+            .unwrap()
+            .map(|count| assert_eq!(count, 1));
+    }
+
+    #[sqlx::test]
+    async fn signin_sends_email(pool: PgPool) {
+        let (app, _, _) = signin_request(
             pool,
             json!({
-                "email": "new_user@example.com"
+                "email": "foo@example.com"
             }),
         )
         .await;
 
+        let emails = app.emails().await;
+        assert_eq!(emails.len(), 1);
         assert_snapshot!(app.emails_snapshot().await);
+    }
+
+    #[sqlx::test]
+    async fn signin_creates_verification_token(pool: PgPool) {
+        let (app, _, _) = signin_request(
+            pool,
+            json!({
+                "email": "foo@example.com"
+            }),
+        )
+        .await;
+
+        app.db()
+            .verification_tokens
+            .count()
+            .await
+            .unwrap()
+            .map(|count| assert_eq!(count, 1));
+    }
+
+    #[sqlx::test]
+    async fn signin_invalid_email_error(pool: PgPool) {
+        let (_, _, res) = signin_request(
+            pool,
+            json!({
+                "email": "invalidemail"
+            }),
+        )
+        .await;
+
+        res.assert_status_bad_request();
+        res.assert_json(&json!({
+            "title": "Invalid request",
+            "detail": "Invalid email address",
+            "status": 400
+        }));
+    }
+
+    #[sqlx::test]
+    async fn signin_missing_email_error(pool: PgPool) {
+        let (_, _, res) = signin_request(pool, json!({})).await;
+
+        res.assert_status_bad_request();
+        res.assert_json(&json!({
+            "title": "Invalid request",
+            "detail": "Invalid JSON",
+            "status": 400
+        }));
+    }
+
+    #[sqlx::test]
+    async fn continue_signin_success(pool: PgPool) {
+        let (app, anon, _) = signin_request(
+            pool,
+            json!({
+                "email": "unverified@example.com"
+            }),
+        )
+        .await;
 
         let emails = app.emails().await;
-        let _token = extract_token_from_signin_email(&emails);
+        let token = extract_token_from_signin_email(&emails);
+
+        let res = anon.get(&format!("/v1/auth/continue/{token}")).await;
+
+        res.assert_status_ok();
+        match res.json::<serde_json::Value>() {
+            Value::Object(map) => {
+                assert!(map.contains_key("access_token"));
+                assert!(map.contains_key("refresh_token"));
+            }
+            _ => panic!("Expected JSON object"),
+        }
+    }
+
+    #[sqlx::test]
+    async fn continue_signin_creats_user(pool: PgPool) {
+        let email = "unverified@example.com";
+        let (app, anon, _) = signin_request(
+            pool,
+            json!({
+                "email": email
+            }),
+        )
+        .await;
+
+        let emails = app.emails().await;
+        let token = extract_token_from_signin_email(&emails);
+
+        anon.get(&format!("/v1/auth/continue/{token}")).await;
+
+        let user = app.db().users.find_by_email(email).await.unwrap();
+        assert!(user.email_verified.is_some());
+    }
+
+    #[sqlx::test]
+    async fn continue_signin_invalid_error(pool: PgPool) {
+        let (_, anon) = TestApp::init().empty(pool).await;
+
+        let res = anon.get("/v1/auth/continue/invalid_token").await;
+
+        res.assert_status_unauthorized();
+        res.assert_json(&json!({
+            "title": "Unauthorized",
+            "detail": "Invalid verification token",
+            "status": 401
+        }));
+    }
+
+    #[sqlx::test]
+    async fn continue_signin_expired_error(pool: PgPool) {
+        let email = "foo@example.com";
+        let (app, anon, _) = signin_request(pool, json!({ "email": email })).await;
+
+        let emails = app.emails().await;
+        let token = extract_token_from_signin_email(&emails);
+
+        app.db()
+            .verification_tokens
+            .expire_by_identifier(email)
+            .await
+            .unwrap();
+
+        let res = anon.get(&format!("/v1/auth/continue/{token}")).await;
+
+        res.assert_status_unauthorized();
+        res.assert_json(&json!({
+            "title": "Unauthorized",
+            "detail": "Expired verification token",
+            "status": 401
+        }));
+    }
+
+    #[sqlx::test]
+    async fn continue_signin_used_token_error(pool: PgPool) {
+        let (app, anon, _res) = signin_request(
+            pool,
+            json!({
+                "email": "foo@example.com"
+            }),
+        )
+        .await;
+
+        let emails = app.emails().await;
+        let token = extract_token_from_signin_email(&emails);
+
+        let res = anon.get(&format!("/v1/auth/continue/{}", token)).await;
+        res.assert_status_ok();
+
+        let res = anon.get(&format!("/v1/auth/continue/{}", token)).await;
+
+        res.assert_status_unauthorized();
+        res.assert_json(&json!({
+            "title": "Unauthorized",
+            "status": 401,
+            "detail": "Invalid verification token"
+        }));
     }
 }

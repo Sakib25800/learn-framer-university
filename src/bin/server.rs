@@ -17,7 +17,7 @@ async fn main() -> anyhow::Result<()> {
 
     let emails = Emails::from_environment(&config);
 
-    let app = Arc::new(App::build(config, emails).await);
+    let app = Arc::new(App::build(config, emails, None).await);
 
     // Start the background thread periodically logging instance metrics.
     log_instance_metrics_thread(app.clone());
