@@ -48,7 +48,7 @@ export default defineConfig({
                 JWT_ACCESS_TOKEN_EXPIRATION_HOURS: "1",
                 JWT_REFRESH_TOKEN_EXPIRATION_DAYS: "7",
                 EMAIL_VERIFICATION_EXPIRATION_HOURS: "24",
-                DATABASE_URL: process.env.TEST_DATABASE_URL || "postgres://postgres:postgres@localhost/postgres",
+                DATABASE_URL: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost/postgres",
                 CONNECTION_TIMEOUT_SECONDS: "1",
                 POOL_SIZE: "5",
                 APP_URL: "http://localhost:3000",
