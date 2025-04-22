@@ -1641,7 +1641,9 @@ name = "lfu_database"
 version = "0.1.0"
 dependencies = [
  "chrono",
+ "serde",
  "sqlx",
+ "utoipa",
  "uuid",
 ]
 

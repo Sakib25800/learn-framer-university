@@ -77,7 +77,7 @@ impl AuthCheck {
         let user = db.users.find(token_data.claims.sub).await.map_err(|_| {
             parts
                 .request_log()
-                .add("cause", "User not found from valid jwt in database");
+                .add("cause", "User not found in database");
             internal("User not found")
         })?;
 

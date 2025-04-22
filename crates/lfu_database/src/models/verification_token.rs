@@ -99,4 +99,47 @@ impl VerificationTokens {
 
         Ok(result.rows_affected())
     }
+
+    // This should be removed in future, it's only intended for tests.
+    pub async fn count(&self) -> DbResult<Option<i64>> {
+        let result = sqlx::query!(
+            r#"
+            SELECT COUNT(*) AS count
+            FROM verification_tokens
+            "#,
+        )
+        .fetch_one(&self.pool)
+        .await?;
+
+        Ok(result.count)
+    }
+
+    // This should be removed in future, it's only intended for tests.
+    pub async fn expire_by_identifier(
+        &self,
+        identifier: &str,
+    ) -> DbResult<Vec<VerificationTokenModel>> {
+        let expired_time = Utc::now();
+
+        let tokens = sqlx::query_as!(
+            VerificationTokenModel,
+            r#"
+                UPDATE verification_tokens
+                SET expires = $1
+                WHERE identifier = $2
+                RETURNING
+                    identifier,
+                    token,
+                    expires,
+                    created_at,
+                    updated_at
+                "#,
+            expired_time,
+            identifier
+        )
+        .fetch_all(&self.pool)
+        .await?;
+
+        Ok(tokens)
+    }
 }

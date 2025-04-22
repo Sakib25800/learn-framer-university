@@ -17,7 +17,7 @@ use crate::{
     App, Emails, Env, Server,
 };
 
-use super::user::{MockAdmin, MockAnonymous, MockUser};
+use super::{MockAdmin, MockAnonymous, MockUser};
 
 struct TestAppInner {
     app: Arc<App>,
@@ -41,7 +41,7 @@ impl TestApp {
     /// and return mock user tokens.
     async fn db_new_user(&self, email: &str, role: UserRole) -> MockUser {
         let user = self.db().users.create(email, role).await.unwrap();
-        self.db().users.verify_email(user.id).await.unwrap();
+        let user = self.db().users.verify_email(user.id).await.unwrap();
 
         let config = &self.0.app.config;
         let Server {
@@ -50,6 +50,7 @@ impl TestApp {
             jwt_refresh_token_expiration_days,
             ..
         } = config.as_ref();
+
         let access_token = generate_access_token(
             jwt_secret,
             jwt_access_token_expiration_hours,
@@ -145,7 +146,7 @@ pub struct TestAppBuilder {
 impl TestAppBuilder {
     /// Create a `TestApp` with an anonymous user.
     pub async fn empty(self, pool: PgPool) -> (TestApp, MockAnonymous) {
-        let (app, server) = build_app(self.config).await;
+        let (app, server) = build_app(self.config, pool.clone()).await;
 
         let test_app_inner = TestAppInner {
             app,
@@ -168,15 +169,15 @@ impl TestAppBuilder {
 
     pub async fn with_admin(self, pool: PgPool) -> (TestApp, MockAnonymous, MockUser, MockAdmin) {
         let (app, anon) = self.empty(pool).await;
-        let user = app.new_user("user").await;
+        let user = app.new_user("foo").await;
         let admin = app.new_admin("admin").await;
         (app, anon, user, admin)
     }
 }
 
-async fn build_app(config: Server) -> (Arc<App>, TestServer) {
+async fn build_app(config: Server, pool: PgPool) -> (Arc<App>, TestServer) {
     let emails = Emails::new_in_memory();
-    let app = App::build(config, emails).await;
+    let app = App::build(config, emails, Some(pool)).await;
 
     let app = Arc::new(app);
     let router = crate::build_handler(Arc::clone(&app));

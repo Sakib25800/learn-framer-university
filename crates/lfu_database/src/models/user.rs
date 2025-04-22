@@ -4,8 +4,11 @@ use uuid::Uuid;
 
 use crate::DbResult;
 
-#[derive(Debug, Clone, PartialEq, sqlx::Type)]
-#[sqlx(type_name = "TEXT", rename_all = "lowercase")]
+#[derive(
+    Debug, Clone, PartialEq, sqlx::Type, serde::Serialize, serde::Deserialize, utoipa::ToSchema,
+)]
+#[sqlx(type_name = "TEXT")]
+#[sqlx(rename_all = "lowercase")]
 pub enum UserRole {
     User,
     Admin,
@@ -48,7 +51,7 @@ impl Users {
                 updated_at
             "#,
             email,
-            role as _
+            role as UserRole
         )
         .fetch_one(&self.pool)
         .await?;

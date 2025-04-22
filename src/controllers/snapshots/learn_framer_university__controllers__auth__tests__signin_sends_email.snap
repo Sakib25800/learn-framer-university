@@ -2,7 +2,7 @@
 source: src/controllers/auth.rs
 expression: app.emails_snapshot().await
 ---
-To: new_user@example.com
+To: foo@example.com
 From: learn.framer.university <noreply@learn.framer.university>
 Subject: Activation link for Framer University
 Content-Type: text/plain; charset=utf-8
