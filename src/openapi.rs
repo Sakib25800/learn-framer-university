@@ -57,7 +57,7 @@ mod tests {
     async fn test_openapi_snapshot(pool: PgPool) {
         let (_, anon) = TestApp::init().empty(pool).await;
 
-        let res = anon.get("/api/openapi.json").await;
+        let res = anon.get("/api/private/openapi.json").await;
 
         res.assert_status_ok();
         res.assert_json_contains(&json!({

@@ -10,7 +10,7 @@ use crate::{
     auth::generate_access_token,
     config::Server,
     middleware::{json::JsonBody, path::ValidatedPath},
-    util::errors::{unauthorized, AppErrorResponse, AppResult},
+    util::errors::{unauthorized, AppResult},
     views::{MessageResponse, VerifiedEmailResponse},
 };
 
@@ -33,8 +33,7 @@ pub struct VerifyEmailQueryParams {
     tag = "auth",
     request_body = AuthSignInBody,
     responses(
-        (status = 200, body = MessageResponse, description = "successful operation"),
-        (status = 400, body = AppErrorResponse, description = "failed operation"),
+        (status = 200, body = MessageResponse, description = "Successful Response"),
     ),
 )]
 pub async fn signin(
@@ -74,7 +73,7 @@ pub struct AuthSignInParams {
     pub token: String,
 }
 
-/// Verify the user's email and create a new user.
+/// Verify user's email and complete sign-in process.
 #[utoipa::path(
     get,
     path = "/v1/auth/continue/{token}",
@@ -82,8 +81,7 @@ pub struct AuthSignInParams {
         ("token" = String, Path, description = "Token used to verify email")
     ),
     responses(
-        (status = 200, body = VerifiedEmailResponse, description = "successful operation"),
-        (status = 400, body = AppErrorResponse, description = "failed operation"),
+        (status = 200, body = VerifiedEmailResponse, description = "Successful Response"),
     ),
     tag = "auth",
 )]

@@ -40,8 +40,7 @@ pub struct VerifiedEmailResponse {
 
 #[derive(Serialize, Deserialize, Debug, ToSchema)]
 pub struct MessageResponse {
-    /// Message content.
-    #[schema(example = "We've sent you an email!")]
+    /// A message describing the result of the operation.
     pub message: String,
 }
 

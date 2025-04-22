@@ -35,7 +35,7 @@ async fn main() -> anyhow::Result<()> {
         .await
         .unwrap();
 
-    tracing::info!("Server has gracefully shutdown!");
+    tracing::info!("Server shutdown");
 
     Ok(())
 }

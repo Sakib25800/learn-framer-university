@@ -1,19 +1,18 @@
 use axum::{Extension, Json};
 use lfu_database::models::user::UserModel;
 
-use crate::{
-    util::errors::{AppErrorResponse, AppResult},
-    views::AuthenticatedUser,
-};
+use crate::{util::errors::AppResult, views::AuthenticatedUser};
 
 /// Retrieve a user's profile.
 #[utoipa::path(
     get,
     path = "/v1/users/me",
     tag = "users",
+    security(
+        ("bearer" = [])
+    ),
     responses(
-        (status = 200, body = AuthenticatedUser, description = "successful operation"),
-        (status = 400, body = AppErrorResponse, description = "unauthorized")
+        (status = 200, body = AuthenticatedUser, description = "Successful Response"),
     )
 )]
 pub async fn me(Extension(user): Extension<UserModel>) -> AppResult<Json<AuthenticatedUser>> {
