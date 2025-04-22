@@ -5,7 +5,7 @@ use crate::{
     views::MessageResponse,
 };
 
-/// Health check
+/// Health check.
 #[utoipa::path(
     get,
     path = "/",
