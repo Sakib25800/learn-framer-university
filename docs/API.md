@@ -72,25 +72,24 @@ cargo insta status
 Example snapshot test:
 ```rust
 //src/tests/routes/auth/signin.rs
-#[tokio::test(flavor = "multi_thread")]
-async fn signin_existing_user() {
-    let (app, anon, user) = TestApp::init().with_user().await;
 
-    println!("Email: {}", &user.as_model().email);
-    let response = anon
+#[sqlx::test]
+async fn signin_existing_user(pool: sqlx::PgPool) {
+    let (app, anon, user) = TestApp::init().with_user(pool).await;
+
+    let res = anon
         .post("/v1/auth/signin")
         .json(&json!({
             "email": user.as_model().email
         }))
         .await;
 
-    response.assert_status_ok();
-    response.assert_json(&json!({
-        "message": "We've sent you an email"
+    res.assert_status_ok();
+    res.assert_json(&json!({
+        "message": "We've sent you an email!"
     }));
 
     let emails = app.emails().await;
-
     assert_eq!(emails.len(), 1);
     assert_snapshot!(app.emails_snapshot().await);
 }
@@ -101,17 +100,17 @@ Example route test:
 ```rust
 // src/tests/routes/me/get.rs
 
-#[tokio::test(flavor = "multi_thread")]
-async fn me_failure() {
-    let (_, anon, user) = TestApp::init().with_user().await;
+#[sqlx::test]
+async fn signin_missing_email_error(pool: PgPool) {
+    let (app, anon) = TestApp::init().empty(pool).await;
 
-    let response = anon.get("/v1/me").expect_failure().await;
+    let res = anon.post("/v1/auth/signin").json(&body).await;
 
-    response.assert_status(StatusCode::FORBIDDEN);
-    response.assert_json(&json!({
-        "title": "Forbidden",
-        "detail": "Invalid or missing authentication",
-        "status": 401
+    res.assert_status_bad_request();
+    res.assert_json(&json!({
+        "title": "Invalid request",
+        "detail": "Invalid JSON",
+        "status": 400
     }));
 }
 ```
@@ -120,26 +119,26 @@ Example CORS test:
 ```rust
 // src/tests/cors.rs
 
-#[tokio::test(flavor = "multi_thread")]
-async fn test_with_matching_origin() {
+#[sqlx::test]
+async fn test_with_matching_origin(pool: PgPool) {
     let (_, _, cookie) = TestApp::init()
         .with_config(|server| {
             server.allowed_origins = "https://learn.framer.university".parse().unwrap();
         })
-        .with_user()
+        .with_user(pool)
         .await;
 
     let mut request = cookie.get_request("/v1/me");
     request.header("Origin", "https://learn.framer.university");
 
-    let response = cookie.run::<()>(request).await;
-    assert_eq!(response.status(), StatusCode::OK);
+    let res = cookie.run::<()>(request).await;
+    assert_eq!(res.status(), StatusCode::OK);
 }
 ```
 
 ### Running Tests
 
-To run all tests, use the following command:
+To run all tests, use the following:
 
 ```sh
 cargo test

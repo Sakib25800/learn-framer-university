@@ -5,7 +5,7 @@ use utoipa_axum::router::OpenApiRouter;
 #[derive(OpenApi)]
 #[openapi(
     info(
-        title = "api.learn.framer.university",
+        title = "learn.framer.university",
         description = "API documentation for [learn.framer.university](https://learn.framer.university)",
         contact(name = "Sakibul Islam", email = "sakibulislam25800@gmail.com"),
         version = "0.0.0",
@@ -44,5 +44,24 @@ impl Modify for SecurityAddon {
             .build();
 
         components.add_security_scheme("bearer", SecurityScheme::Http(jwt_scheme));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::tests::mocks::{RequestHelper, TestApp};
+    use serde_json::json;
+    use sqlx::PgPool;
+
+    #[sqlx::test]
+    async fn test_openapi_snapshot(pool: PgPool) {
+        let (_, anon) = TestApp::init().empty(pool).await;
+
+        let res = anon.get("/api/private/openapi.json").await;
+
+        res.assert_status_ok();
+        res.assert_json_contains(&json!({
+             "openapi": "3.1.0",
+        }));
     }
 }

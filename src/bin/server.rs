@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::signal::unix::{signal, SignalKind};
-use tracing::*;
 
 use learn_framer_university::{app::App, build_handler, email::Emails};
 
@@ -12,15 +11,15 @@ async fn main() -> anyhow::Result<()> {
 
     learn_framer_university::util::tracing::init();
 
-    info_span!("server.run");
+    tracing::info_span!("server.run");
 
     let config = learn_framer_university::config::Server::from_environment()?;
 
     let emails = Emails::from_environment(&config);
 
-    let app = Arc::new(App::new(config, emails).await);
+    let app = Arc::new(App::build(config, emails, None).await);
 
-    // Start the background thread periodically logging instance metrics
+    // Start the background thread periodically logging instance metrics.
     log_instance_metrics_thread(app.clone());
 
     let axum_router = build_handler(app.clone());
@@ -29,14 +28,14 @@ async fn main() -> anyhow::Result<()> {
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
 
-    info!("Listening at 0.0.0.0:8080");
+    tracing::info!("Listening at 0.0.0.0:8080");
 
     axum::serve(listener, make_service)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 
-    info!("Server has gracefully shutdown!");
+    tracing::info!("Server shutdown");
 
     Ok(())
 }
@@ -71,7 +70,7 @@ fn log_instance_metrics_thread(app: Arc<App>) {
 
     std::thread::spawn(move || loop {
         if let Err(err) = log_instance_metrics_inner(&app) {
-            error!(?err, "log_instance_metrics error");
+            tracing::error!(?err, "log_instance_metrics error");
         }
         std::thread::sleep(interval);
     });
@@ -81,7 +80,7 @@ fn log_instance_metrics_inner(app: &App) -> anyhow::Result<()> {
     let metrics = app.instance_metrics.gather(app)?;
 
     // Log metrics directly to stdout
-    info!(
+    tracing::info!(
         metrics = ?metrics,
         "Instance metrics gathered"
     );
