@@ -26,7 +26,7 @@ pub struct VerifyEmailQueryParams {
     token: String,
 }
 
-/// Sign in the user and send a sign-in email
+/// Sign in the user and send a sign-in email.
 #[utoipa::path(
     post,
     path = "/v1/auth/signin",
@@ -74,7 +74,7 @@ pub struct AuthSignInParams {
     pub token: String,
 }
 
-/// Verify the user's email
+/// Verify the user's email and create a new user.
 #[utoipa::path(
     get,
     path = "/v1/auth/continue/{token}",
@@ -130,10 +130,10 @@ pub async fn continue_signin(
         .create(user.id, *jwt_refresh_token_expiration_days)
         .await?;
 
-    // Set user email as verified
+    // Set user email as verified.
     db.users.verify_email(user.id).await?;
 
-    // Delete the used verification token
+    // Delete the used verification token.
     db.verification_tokens
         .delete(&verification_token.identifier, token.as_str())
         .await?;

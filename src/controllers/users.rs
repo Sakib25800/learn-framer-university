@@ -6,6 +6,7 @@ use crate::{
     views::AuthenticatedUser,
 };
 
+/// Retrieve a user's profile.
 #[utoipa::path(
     get,
     path = "/v1/users/me",
