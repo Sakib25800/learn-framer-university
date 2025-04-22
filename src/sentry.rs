@@ -26,7 +26,7 @@ pub fn init() -> Option<ClientInitGuard> {
         }
 
         let op = ctx.operation();
-        if op == "http.server" && ctx.name().starts_with("GET /private/metrics/") {
+        if op == "http.server" && ctx.name().starts_with("GET /api/private/metrics/") {
             // Ignore all traces for internal metrics collection
             return 0.;
         }

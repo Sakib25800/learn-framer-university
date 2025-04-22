@@ -1,17 +1,13 @@
 use axum::Json;
 
-use crate::{
-    util::errors::{AppErrorResponse, AppResult},
-    views::MessageResponse,
-};
+use crate::{util::errors::AppResult, views::MessageResponse};
 
 /// Health check.
 #[utoipa::path(
     get,
     path = "/",
     responses(
-        (status = OK, body = MessageResponse, description = "successful operation"),
-        (status = 400, body = AppErrorResponse, description = "failed operation"),
+        (status = OK, body = MessageResponse, description = "Successful Response"),
     ),
 )]
 pub async fn health_check() -> AppResult<Json<MessageResponse>> {

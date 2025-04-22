@@ -6,7 +6,7 @@ use std::process::Command;
 // Hacky, need to improve this
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let response = reqwest::get("http://localhost:8080/private/openapi.json")
+    let response = reqwest::get("http://localhost:8080/api/private/openapi.json")
         .await
         .expect("Server is not running");
     let body = response.text().await?;
