@@ -5,7 +5,7 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="flex flex-col items-center gap-6 text-center">
         <div className="flex flex-col gap-3">
-          <p className="text-primary-950 text-base font-medium">Coming soon</p>
+          <p className="text-primary-950 text-base font-medium">Coming soon.</p>
           <h1 className="font-semibold text-white">Framer University</h1>
           <p className="text-primary-950 max-w-[308px] text-base font-medium">
             The world&apos;s first learning platform dedicated to teaching Framer in a fun & efficient way.

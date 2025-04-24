@@ -43,7 +43,7 @@ pub async fn signin(
     let db = state.db();
     let email = &body.email;
 
-    if let Err(_) = db.users.find_by_email(email).await {
+    if db.users.find_by_email(email).await.is_err() {
         db.verification_tokens.delete_all(email).await?;
     }
 
@@ -241,12 +241,8 @@ mod tests {
             }))
             .await;
 
-        app.db()
-            .verification_tokens
-            .count()
-            .await
-            .unwrap()
-            .map(|count| assert_eq!(count, 1));
+        let count = app.db().verification_tokens.count().await.unwrap();
+        assert_eq!(count, Some(1));
     }
 
     #[sqlx::test]
@@ -274,12 +270,8 @@ mod tests {
         )
         .await;
 
-        app.db()
-            .verification_tokens
-            .count()
-            .await
-            .unwrap()
-            .map(|count| assert_eq!(count, 1));
+        let count = app.db().verification_tokens.count().await.unwrap();
+        assert_eq!(count, Some(1));
     }
 
     #[sqlx::test]

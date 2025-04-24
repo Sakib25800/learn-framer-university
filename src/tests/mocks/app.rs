@@ -18,7 +18,6 @@ use crate::{
 };
 
 use super::{MockAdmin, MockAnonymous, MockUser};
-
 struct TestAppInner {
     app: Arc<App>,
     server: TestServer,

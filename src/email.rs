@@ -33,6 +33,7 @@ impl Emails {
         let login = dotenvy::var("MAILGUN_SMTP_LOGIN");
         let password = dotenvy::var("MAILGUN_SMTP_PASSWORD");
         let server = dotenvy::var("MAILGUN_SMTP_SERVER");
+        let tmp = dotenvy::var("RUNNER_TEMP");
 
         let from = login.as_deref().unwrap_or(DEFAULT_FROM).parse().unwrap();
 
@@ -49,7 +50,8 @@ impl Emails {
             }
             _ => {
                 // Fall back to filesystem transport if any SMTP credentials are missing
-                let transport = AsyncFileTransport::new("/tmp");
+                let transport =
+                    AsyncFileTransport::new(tmp.expect("RUNNER_TEMP env variable missing"));
                 EmailBackend::FileSystem(Arc::new(transport))
             }
         };

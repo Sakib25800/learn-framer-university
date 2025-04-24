@@ -7,7 +7,7 @@ import path from "path"
  */
 export const readLatestEmail = async () => {
   try {
-    const tempDir = process.env.RUNNER_TEMP || "/tmp"
+    const tempDir = process.env.RUNNER_TEMP!
 
     const files = await fs.readdir(tempDir)
     const emailFiles = files.filter((file) => file.endsWith(".eml"))
