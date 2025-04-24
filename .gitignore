@@ -44,6 +44,7 @@ next-env.d.ts
 
 # Storybook
 storybook-static/
+build-storybook.log
 
 # Playwright
 /test-results/
@@ -55,5 +56,4 @@ playwright-results/
 
 # JUnit
 junit.xml
-
 .swc

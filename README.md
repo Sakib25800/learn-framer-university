@@ -33,6 +33,11 @@ Automatically deploys on every push to the `staging` branch:
 - https://learn-framer-university-api-staging.fly.dev
 - https://learn-framer-university-staging.fly.dev
 
+**Storybook**:
+Automatically deploys on every push to the `staging` branch:
+
+- https://sakib25800.github.io/learn-framer-university
+
 ## Setting up development environment
 
 ### Working on the Frontend
