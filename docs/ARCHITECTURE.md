@@ -7,12 +7,12 @@ Documentation about the codebase appears in these locations:
 - `README.md` - Important information to show on the github front page.
 - `docs/` - Long-form documentation.
 
-## API - Rust
+## Backend - Rust
 
-The API  is written in Rust. Most of that code lives in the _src_ directory. It
+The backend is written in Rust. Most of that code lives in the _src_ directory. It
 serves a JSON API over HTTP, and the HTTP server interface is provided by the [axum](https://crates.io/crates/axum) crate and
-related crates. More information about the API is in
-[`docs/API.md`](https://github.com/sakib25800/learn-framer-university/blob/main/docs/API.md).
+related crates. More information about the backend is in
+[`docs/BACKEND.md`](https://github.com/sakib25800/learn-framer-university/blob/main/docs/BACKEND.md).
 
 These files and directories have to do with the backend:
 
@@ -20,11 +20,11 @@ These files and directories have to do with the backend:
   and deployment
 - `Cargo.toml` - Defines the crate and its dependencies
 - `migrations/` - SQL migrations applied to the database during development and deployment
-- `src/` - The API's source code
+- `src/` - Backend source code
 - `target/` - Compiled output, including dependencies and final binary artifacts - (ignored in
   `.gitignore`)
 
-The API stores information in a Postgres database.
+The backend uses a Postgres database.
 
 ## Frontend - Next.js
 
@@ -45,7 +45,7 @@ These files have to do with the frontend:
 
 - `shared/` - Shared code between the frontend and backend
 
-If changes are made to the API, then run the following to ensure type safety.
+If changes are made to the backend, then run the following to ensure type safety.
 
 To generate the `shared/api/openapi.json` file, run the following command:
 
@@ -53,7 +53,7 @@ To generate the `shared/api/openapi.json` file, run the following command:
 cargo run --bin gen_openapi
 ```
 
-To generate the `shared/api/v1.d.ts` file for API type definitions, run the following command:
+To generate the `shared/api/v1.d.ts` file for backend type definitions, run the following command:
 
 ```
 npx openapi-typescript ./shared/api/openapi.json -o ./shared/api/v1.d.ts
@@ -64,10 +64,10 @@ npx openapi-typescript ./shared/api/openapi.json -o ./shared/api/v1.d.ts
 learn.framer.university is deployed on [Fly](https://fly.io/).
 
 - `fly.frontend.toml` - Fly config for production frontend
-- `frontend.Dockerfile` - Unified Dockerfile config for frontend with environment-specific build arguments
+- `frontend.Dockerfile` - Dockerfile config for frontend with environment-specific build arguments
 
-- `fly.api.toml` - Fly config for production API
-- `api.Dockerfile` - Unified Dockerfile config for API with environment-specific build arguments
+- `fly.backend.toml` - Fly config for production backend
+- `backend.Dockerfile` - Dockerfile config for backend with environment-specific build arguments
 
 ## Development
 

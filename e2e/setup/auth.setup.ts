@@ -2,11 +2,11 @@ import { test as setup } from "@playwright/test"
 import { extractContinueToken, readLatestEmail } from "../helpers/email"
 
 const USER_AUTH_FILE = "playwright/.auth/user.json"
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080"
 
 setup("authenticate user", async ({ page, request }) => {
   // Initiate sign in
-  await request.post(`${API_URL}/v1/auth/signin`, {
+  await request.post(`${BACKEND_URL}/v1/auth/signin`, {
     data: {
       email: "test@example.com",
     },
@@ -25,7 +25,7 @@ setup("authenticate user", async ({ page, request }) => {
   }
 
   // Continue sign in
-  const continueResponse = await request.get(`${API_URL}/v1/auth/continue/${continueToken}`)
+  const continueResponse = await request.get(`${BACKEND_URL}/v1/auth/continue/${continueToken}`)
   const tokens = await continueResponse.json()
 
   if (!tokens.access_token || !tokens.refresh_token) {
@@ -36,7 +36,7 @@ setup("authenticate user", async ({ page, request }) => {
     {
       name: "access_token",
       value: tokens.access_token,
-      domain: new URL(API_URL).hostname,
+      domain: new URL(BACKEND_URL).hostname,
       path: "/",
       httpOnly: true,
       secure: false,
@@ -45,7 +45,7 @@ setup("authenticate user", async ({ page, request }) => {
     {
       name: "refresh_token",
       value: tokens.refresh_token,
-      domain: new URL(API_URL).hostname,
+      domain: new URL(BACKEND_URL).hostname,
       path: "/",
       httpOnly: true,
       secure: false,

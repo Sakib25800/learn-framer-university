@@ -9,7 +9,7 @@ fn generate_user_friendly_message(
     params: &std::collections::HashMap<std::borrow::Cow<'static, str>, serde_json::Value>,
 ) -> String {
     match code {
-        "email" => format!("Invalid email address"),
+        "email" => "Invalid email address".to_string(),
         "url" => format!("'{}' is not a valid URL", field),
         "length" => {
             let min = params.get("min").and_then(|v| v.as_u64());
@@ -100,7 +100,7 @@ where
     async fn from_request(req: Request, state: &S) -> AppResult<Self> {
         let Json(data) = Json::<T>::from_request(req, state)
             .await
-            .map_err(|_| bad_request(format!("Invalid JSON")))?;
+            .map_err(|_| bad_request("Invalid JSON"))?;
         data.validate()
             .map_err(|errs| bad_request(get_first_validation_error(errs)))?;
         Ok(JsonBody(data))

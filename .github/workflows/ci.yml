@@ -13,11 +13,14 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  CARGO_TERM_COLOR: always
-  CARGO_MACHETE_VERSION: 0.7.0
-  PNPM_VERSION: 10.4.1
-  POSTGRES_VERSION: 16
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  CARGO_TERM_COLOR: always
+  # renovate: datasource=crate depName=cargo-machete versioning=semver
+  CARGO_MACHETE_VERSION: 0.7.0
+  # renovate: datasource=crate depName=sqlx-cli versioning=semver
+  SQLX_VERSION: 0.8.5
+  # renovate: datasource=npm depName=pnpm
+  PNPM_VERSION: 10.9.0
 
 jobs:
   changed-files:
@@ -34,7 +37,7 @@ jobs:
         with:
           files: |
             app/**
-            src/**
+            e2e/**
             public/**
             shared/**
             next.config.ts
@@ -48,14 +51,14 @@ jobs:
             frontend.Dockerfile
 
       - uses: tj-actions/changed-files@v45
-        id: changed-files-api
+        id: changed-files-backend
         with:
           files: |
-            api/**
+            src/**
             migrations/**
             .sqlx/**
             Cargo.toml
-            api.Dockerfile
+            backend.Dockerfile
 
       - uses: tj-actions/changed-files@v45
         id: changed-files-rust-lockfiles
@@ -65,33 +68,32 @@ jobs:
 
     outputs:
       frontend: ${{ steps.changed-files-frontend.outputs.any_modified }}
-      api: ${{ steps.changed-files-api.outputs.any_modified }}
+      backend: ${{ steps.changed-files-backend.outputs.any_modified }}
       rust-lockfile: ${{ steps.changed-files-rust-lockfiles.outputs.any_modified }}
 
   backend-lint:
     name: Backend / Lint
     runs-on: ubuntu-latest
     needs: changed-files
-    if: needs.changed-files.outputs.api == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
-
-    env:
-      RUSTFLAGS: "-D warnings"
-      RUSTDOCFLAGS: "-D warnings"
+    if: needs.changed-files.outputs.backend == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
-      - run: rustup component add rustfmt
-      - run: rustup component add clippy
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          components: clippy, rustfmt
 
       - uses: Swatinem/rust-cache@v2
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
 
-      - run: cargo fmt --check --all
-      - run: cargo clippy --all-targets --all-features --workspace
+      - uses: actions-rust-lang/rustfmt@v1
+
+      - uses: giraffate/clippy-action@v1
+        with:
+          reporter: "github-pr-review"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          clippy_flags: -- -D warnings
+
       - run: cargo doc --no-deps --document-private-items
 
   backend-deps:
@@ -102,12 +104,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - uses: Swatinem/rust-cache@v2
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - run: cargo install cargo-machete --vers ${CARGO_MACHETE_VERSION}
       - run: cargo machete
@@ -116,33 +114,80 @@ jobs:
     name: Backend / Test
     runs-on: ubuntu-latest
     needs: changed-files
-    if: needs.changed-files.outputs.api == 'true'
+    if: needs.changed-files.outputs.backend == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     env:
       RUST_BACKTRACE: 1
-      DATABASE_URL: postgres://postgres:postgres@localhost/postgres
-      RUSTFLAGS: "-D warnings -Cinstrument-coverage"
-      MALLOC_CONF: "background_thread:true,abort_conf:true,abort:true,junk:true"
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      RUSTFLAGS: "-D warnings -C instrument-coverage"
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
-      # Remove the Android SDK to free up space
-      - run: sudo rm -rf /usr/local/lib/android
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo install sqlx-cli --version ${SQLX_VERSION} --locked --no-default-features --features native-tls,postgres
+      - run: cargo sqlx database create
+      - run: sqlx migrate run
+      - run: cargo sqlx prepare --check -- --all-targets
+
+      - run: cargo test --all-features
+
+  build-backend:
+    name: Build Backend Binaries
+    runs-on: ubuntu-latest
+    needs: [changed-files]
+    if: needs.changed-files.outputs.backend == 'true' || needs.changed-files.outputs.rust-lockfile == 'true' || github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
 
       - uses: Swatinem/rust-cache@v2
         with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
+          shared-key: "rust-cache"
 
-      # Update `pg_dump` to the same version as the running PostgreSQL server
-      - run: sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -v ${POSTGRES_VERSION} -i -p
-      - run: sudo systemctl start postgresql.service
-      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
+      - run: cargo build
 
-      - run: cargo build --tests --workspace
-      - run: cargo test --workspace
+      # Build release binary if we're deploying to production
+      - name: Build release binary
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: cargo build --release
+
+      # Upload debug binary as artifact
+      - name: Upload debug binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-debug
+          path: target/debug/server
+          retention-days: 1
+
+      # Upload release binary as artifact if we're deploying to production
+      - name: Upload release binary
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-release
+          path: target/release/server
+          retention-days: 1
 
   frontend-lint:
     name: Frontend / Lint
@@ -152,8 +197,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
         with:
@@ -177,8 +220,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
 
       - uses: pnpm/action-setup@v4
         with:
@@ -193,48 +234,50 @@ jobs:
 
       - run: pnpm test:unit
 
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: jest-results
-          path: junit.xml
-          retention-days: 5
-
-  backend-build:
-    name: Backend / Build
-    runs-on: ubuntu-latest
-    needs: changed-files
-    if: needs.changed-files.outputs.api == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          save-if: ${{ github.ref == 'refs/heads/main' }}
-
-      - name: Build backend binary
-        run: cargo build
-
-      - name: Upload backend binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-binary
-          path: target/debug/server
-          retention-days: 1
-
   e2e-test:
     name: E2E Test
     runs-on: ubuntu-latest
-    needs: [changed-files, backend-build]
-    if: needs.changed-files.outputs.frontend == 'true'
+    needs: [changed-files, build-backend]
+    if: needs.changed-files.outputs.frontend == 'true' || needs.changed-files.outputs.backend == 'true' || needs.changed-files.outputs.rust-lockfile == 'true'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RUST_BACKTRACE: 1
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      BACKEND_BINARY_PATH: ./target/debug/server
 
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+
+      - run: echo "RUNNER_TEMP=${{ runner.temp }}" >> $GITHUB_ENV
+
+      - name: Download backend binary
+        uses: actions/download-artifact@v4
         with:
-          persist-credentials: false
+          name: backend-debug
+          path: target/debug/
+
+      - run: chmod +x target/debug/server
+
+      - run: cargo install sqlx-cli --version ${SQLX_VERSION} --locked --no-default-features --features native-tls,postgres
+      - run: cargo sqlx database create
+      - run: sqlx migrate run
 
       - uses: pnpm/action-setup@v4
         with:
@@ -245,31 +288,11 @@ jobs:
           cache: pnpm
           node-version-file: package.json
 
-      - name: Download backend binary
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-binary
-          path: target/debug/
-
-      - name: Make binary executable
-        run: chmod +x target/debug/server
-
       - run: pnpm install
-
-      # Install Playwright browsers
       - run: pnpm playwright install --with-deps chromium
 
-      # Start PostgreSQL service (needed for API)
-      - run: sudo systemctl start postgresql.service
-      - run: sudo -u postgres psql -c "ALTER USER postgres WITH PASSWORD 'postgres'"
-
-      # Run E2E tests with pre-built backend binary
       - run: pnpm test:e2e
-        env:
-          DATABASE_URL: postgres://postgres:postgres@localhost/postgres
-          BACKEND_BINARY_PATH: ./target/debug/server
 
-      # Upload test results and artifacts
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -277,46 +300,122 @@ jobs:
           path: playwright-results/
           retention-days: 30
 
-  deploy-staging:
-    name: Deploy Staging
-    needs: [backend-lint, backend-deps, backend-test, frontend-lint, frontend-unit-test, e2e-test]
-    if: github.ref == 'refs/heads/staging'
+  storybook-deploy:
+    name: Frontend / Deploy Storybook
     runs-on: ubuntu-latest
-    environment: staging
+    needs: [frontend-unit-test]
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: package.json
+          cache: pnpm
+
+      - run: pnpm install
+      - run: pnpm build:storybook
+      - run: pnpm test:storybook
+
+      - name: Deploy Storybook to GitHub Pages
+        uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+        with:
+          path: storybook-static
+
+  deploy-staging:
+    name: Deploy (staging)
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-unit-test, e2e-test, build-backend]
+    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
+
+    environment:
+      name: staging
+      url: https://learn-framer-university-api-staging.fly.dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download backend binary
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-debug
+          path: target/debug/
+
+      - run: chmod +x target/debug/server
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version-file: package.json
+
+      - run: pnpm install
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Deploy API to staging
-        run: flyctl deploy --config fly.staging.api.toml -a learn-framer-university-api-staging --remote-only
+      - name: Deploy backend to staging
+        run: flyctl deploy --config fly.backend.toml -a learn-framer-university-api-staging --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Deploy Frontend to staging
-        run: flyctl deploy --config fly.staging.frontend.toml -a learn-framer-university-staging --remote-only
+      - name: Deploy frontend to staging
+        run: flyctl deploy --config fly.frontend.toml -a learn-framer-university-staging --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   deploy-production:
-    name: Deploy Production
-    needs: [backend-lint, backend-deps, backend-test, frontend-lint, frontend-unit-test, e2e-test]
-    if: github.ref == 'refs/heads/main'
+    name: Deploy (production)
     runs-on: ubuntu-latest
-    environment: production
+    needs: [backend-test, frontend-unit-test, e2e-test, build-backend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    environment:
+      name: production
+      url: https://learn.framer.university
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Download release binary
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-release
+          path: target/release/
+
+      - run: chmod +x target/release/server
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          cache: pnpm
+          node-version-file: package.json
+
+      - run: pnpm install
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
-      - name: Deploy API to production
-        run: flyctl deploy --config fly.api.toml -a learn-framer-university-api --remote-only
+      - name: Deploy backend to production
+        run: flyctl deploy --config fly.backend.toml -a learn-framer-university-api --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
-      - name: Deploy Frontend to production
+      - name: Deploy frontend to production
         run: flyctl deploy --config fly.frontend.toml -a learn-framer-university --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

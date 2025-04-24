@@ -11,7 +11,7 @@ use crate::email::Emails;
 use crate::metrics::{InstanceMetrics, ServiceMetrics};
 
 pub struct App {
-    /// Database client
+    /// Database client.
     pub db: PgDbClient,
 
     /// Server configuration

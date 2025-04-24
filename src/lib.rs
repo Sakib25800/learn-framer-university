@@ -1,4 +1,4 @@
-//! This crate implements the server for <https://api.learn.framer.university>
+//! This crate implements the server for <https://api.learn.framer.university>.
 
 use app::AppState;
 use router::build_axum_router;
