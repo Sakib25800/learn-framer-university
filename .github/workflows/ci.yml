@@ -300,19 +300,16 @@ jobs:
           path: playwright-results/
           retention-days: 30
 
-  storybook-deploy:
+  frontend-deploy-storybook:
     name: Frontend / Deploy Storybook
     runs-on: ubuntu-latest
     needs: [frontend-unit-test]
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
 
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
         with:
@@ -320,22 +317,23 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: package.json
-          cache: pnpm
+          node-version: 22
+          cache: "pnpm"
 
-      - run: pnpm install
-      - run: pnpm build:storybook
-      - run: pnpm test:storybook
+      - run: pnpm install --frozen-lockfile
 
-      - name: Deploy Storybook to GitHub Pages
-        uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
+      - name: Publish to Chromatic
+        uses: chromaui/action@v1
         with:
-          path: storybook-static
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          buildScriptName: "build:storybook"
+          exitOnceUploaded: true
 
   deploy-staging:
     name: Deploy (staging)
     runs-on: ubuntu-latest
-    needs: [backend-test, frontend-unit-test, e2e-test, build-backend]
+    needs: [backend-test, frontend-unit-test, frontend-deploy-storybook, e2e-test, build-backend]
     if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
 
     environment:

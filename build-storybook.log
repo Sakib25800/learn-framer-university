@@ -1,0 +1,31 @@
+
+> learn-framer-university@0.1.0 build:storybook /Users/sakibulislam/Github/learn-framer-university
+> cross-env FORCE_COLOR=1 storybook build --output-dir\=/var/folders/8t/593mj1cj4psbxw10kb_tnb140000gn/T/chromatic--15790-UaUWMGXgTa9n
+
+[1m@storybook/core v8.6.12
+[22m
+info => Cleaning outputDir: [36m../../../../var/folders/8t/593mj1cj4psbxw10kb_tnb140000gn/T/chromatic--15790-UaUWMGXgTa9n[39m
+info => Loading presets
+info => Building manager..
+info => Manager built ([38;2;181;126;229m206 ms[39m)
+info => Building preview..
+WARN No story files found for the specified pattern: [34mapp/components/**/*.stories.mdx[39m
+info Addon-docs: using MDX3
+info => Using implicit CSS loaders
+info => Using SWC as compiler
+info => Using default Webpack5 setup
+WARN asset size limit: The following asset(s) exceed the recommended size limit (244 KiB).
+WARN This can impact web performance.
+WARN Assets: 
+WARN   966.606016d3.iframe.bundle.js (363 KiB)
+WARN   393.ac2da295.iframe.bundle.js (2 MiB)
+WARN   581.dceafd77.iframe.bundle.js (976 KiB)
+WARN entrypoint size limit: The following entrypoint(s) combined asset size exceeds the recommended limit (244 KiB). This can impact web performance.
+WARN Entrypoints:
+WARN   main (2.05 MiB)
+WARN       runtime~main.d43f93d4.iframe.bundle.js
+WARN       393.ac2da295.iframe.bundle.js
+WARN       main.fca6734d.iframe.bundle.js
+WARN 
+info => Preview built ([38;2;181;126;229m5.32 s[39m)
+info => Output directory: /var/folders/8t/593mj1cj4psbxw10kb_tnb140000gn/T/chromatic--15790-UaUWMGXgTa9n
