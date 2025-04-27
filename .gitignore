@@ -1,59 +1,13 @@
-# Node.js dependencies
-node_modules
-
-# Yarn
-.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# Build outputs
-.next/
-out/
-build
-
-# Rust target directory
-target/
-
-# Testing
-coverage
-
-# Misc
 .DS_Store
-*.pem
-
-# Debug logs
-pnpm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-src/pnpm-debug.log*
-src/yarn-debug.log*
-src/yarn-error.log*
-src/.pnpm-debug.log*
-
-# Environment variables
+node_modules
+.turbo
+*.log
+.next
+dist
+dist-ssr
+*.local
 .env
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Storybook
+.cache
+server/dist
+public/dist
 storybook-static/
-
-# Playwright
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
-playwright-results/
-/playwright/
-
-# JUnit
-junit.xml
-
-.swc

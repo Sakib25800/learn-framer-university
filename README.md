@@ -1,190 +1,208 @@
-<div align="center">
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./docs/readme-logo-dark.png">
-  <img alt="crates.io logo" src="./docs/readme-logo-light.png" width="150">
-</picture>
-</div>
+# Turborepo Design System Starter
 
----
+This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
 
-<div align="center">
+This guide explains how to use a React design system starter powered by:
 
-[Homepage](https://framer.university)
-| [Status](https://status.learn.framer.university/)
-| [Docs](https://github.com/Sakib25800/learn-framer-university/tree/main/docs)
+- 🏎 [Turborepo](https://turborepo.com) — High-performance build system for Monorepos
+- 🚀 [React](https://reactjs.org/) — JavaScript library for user interfaces
+- 🛠 [Tsup](https://github.com/egoist/tsup) — TypeScript bundler powered by esbuild
+- 📖 [Storybook](https://storybook.js.org/) — UI component environment powered by Vite
 
-</div>
+As well as a few others tools preconfigured:
 
-## Framer University
+- [TypeScript](https://www.typescriptlang.org/) for static type checking
+- [ESLint](https://eslint.org/) for code linting
+- [Prettier](https://prettier.io) for code formatting
+- [Changesets](https://github.com/changesets/changesets) for managing versioning and changelogs
+- [GitHub Actions](https://github.com/changesets/action) for fully automated package publishing
 
-Learn everything there is to know about Framer.
+## Using this example
 
-## Environments
+Run the following command:
 
-**Staging**:
-Automatically deploys on every push to the `main` branch
-
-- https://learn-framer-university-api-staging.fly.dev
-- https://learn-framer-university-staging.fly.dev
-
-**Production**:
-Automatically deploys when a new version tag is created
-
-- https://api.learn.framer.university
-- https://learn.framer.university
-
-## Setting up development environment
-
-### Working on the Frontend
-
-#### Frontend requirements
-
-In order to run the backend, you will need to have installed:
-
-- [node](https://nodejs.org/en/) is the runtime environment
-- [pnpm](https://www.pnpm.io/) is the Node.js package manager
-
-#### Building and serving the frontend
-
-To install the npm packages, run the following:
-```console
-pnpm install
+```sh
+npx create-turbo@latest -e design-system
 ```
 
-#### Running the frontend tests
+### Useful Commands
 
-To run the frontend tests, run the following:
-```console
-pnpm test
+- `pnpm build` - Build all packages, including the Storybook site
+- `pnpm dev` - Run all packages locally and preview with Storybook
+- `pnpm lint` - Lint all packages
+- `pnpm changeset` - Generate a changeset
+- `pnpm clean` - Clean up all `node_modules` and `dist` folders (runs each package's clean script)
+
+## Turborepo
+
+[Turborepo](https://turborepo.com) is a high-performance build system for JavaScript and TypeScript codebases. It was designed after the workflows used by massive software engineering organizations to ship code at scale. Turborepo abstracts the complex configuration needed for monorepos and provides fast, incremental builds with zero-configuration remote caching.
+
+Using Turborepo simplifies managing your design system monorepo, as you can have a single lint, build, test, and release process for all packages. [Learn more](https://vercel.com/blog/monorepos-are-changing-how-teams-build-software) about how monorepos improve your development workflow.
+
+## Apps & Packages
+
+This Turborepo includes the following packages and applications:
+
+- `apps/docs`: Component documentation site with Storybook
+- `packages/ui`: Core React components
+- `packages/typescript-config`: Shared `tsconfig.json`s used throughout the Turborepo
+- `packages/eslint-config`: ESLint preset
+
+Each package and app is 100% [TypeScript](https://www.typescriptlang.org/). Workspaces enables us to "hoist" dependencies that are shared between packages to the root `package.json`. This means smaller `node_modules` folders and a better local dev experience. To install a dependency for the entire monorepo, use the `-w` workspaces flag with `pnpm add`.
+
+This example sets up your `.gitignore` to exclude all generated files, other folders like `node_modules` used to store your dependencies.
+
+### Compilation
+
+To make the ui library code work across all browsers, we need to compile the raw TypeScript and React code to plain JavaScript. We can accomplish this with `tsup`, which uses `esbuild` to greatly improve performance.
+
+Running `pnpm build` from the root of the Turborepo will run the `build` command defined in each package's `package.json` file. Turborepo runs each `build` in parallel and caches & hashes the output to speed up future builds.
+
+For `@acme/ui`, the `build` command is equivalent to the following:
+
+```bash
+tsup src/*.tsx --format esm,cjs --dts --external react
 ```
 
-### Working on the Backend
+`tsup` compiles all of the components in the design system individually, into both ES Modules and CommonJS formats as well as their TypeScript types. The `package.json` for `@acme/ui` then instructs the consumer to select the correct format:
 
-#### Backend Requirements
-
-In order to run the backend, you will need to have installed:
-
-- [rustup](https://rustup.rs/) is the Rust installer
-- [Rust](https://www.rust-lang.org/en-US/) and cargo, which comes with Rust
-- [Postgres](https://www.postgresql.org/) is the database
-- [sqlx](https://github.com/launchbadge/sqlx) is the database migration tool / ORM
-
-##### Postgres
-
-To install Postgres, run the following:
-
-```console
-brew install postgresql
+```json:ui/package.json
+{
+  "name": "@acme/ui",
+  "version": "0.0.0",
+  "sideEffects": false,
+  "exports":{
+    "./button": {
+      "types": "./src/button.tsx",
+      "import": "./dist/button.mjs",
+      "require": "./dist/button.js"
+    }
+  }
+}
 ```
 
-This installs the CLI tool `psql`.
+Run `pnpm build` to confirm compilation is working correctly. You should see a folder `ui/dist` which contains the compiled output.
 
-To start Postgres, run the following:
-```console
-brew services start postgresql
+```bash
+ui
+└── dist
+    ├── button.d.ts  <-- Types
+    ├── button.js    <-- CommonJS version
+    ├── button.mjs   <-- ES Modules version
+    └── button.d.mts   <-- ES Modules version with Types
 ```
 
-To stop Postgres, run the following:
-```console
-brew services stop postgresql
+## Components
+
+Each file inside of `ui/src` is a component inside our design system. For example:
+
+```tsx:ui/src/Button.tsx
+import * as React from 'react';
+
+export interface ButtonProps {
+  children: React.ReactNode;
+}
+
+export function Button(props: ButtonProps) {
+  return <button>{props.children}</button>;
+}
+
+Button.displayName = 'Button';
 ```
 
-To create a new Postgres database, run the following command:
+When adding a new file, ensure that its specifier is defined in `package.json` file:
 
-```console
-createdb <database_name>
+```json:ui/package.json
+{
+  "name": "@acme/ui",
+  "version": "0.0.0",
+  "sideEffects": false,
+  "exports":{
+    "./button": {
+      "types": "./src/button.tsx",
+      "import": "./dist/button.mjs",
+      "require": "./dist/button.js"
+    }
+    // Add new component exports here
+  }
+}
 ```
 
-#### `sqlx-cli`
+## Storybook
 
-You must have `sqlx-cli` installed for the following commands to work.
-```console
-$ cargo install sqlx-cli --no-default-features --features native-tls,postgres
+Storybook provides us with an interactive UI playground for our components. This allows us to preview our components in the browser and instantly see changes when developing locally. This example preconfigures Storybook to:
+
+- Use Vite to bundle stories instantly (in milliseconds)
+- Automatically find any stories inside the `stories/` folder
+- Support using module path aliases like `@acme/ui` for imports
+- Write MDX for component documentation pages
+
+For example, here's the included Story for our `Button` component:
+
+```js:apps/docs/stories/button.stories.mdx
+import { Button } from '@acme/ui/button';
+import { Meta, Story, Preview, Props } from '@storybook/addon-docs/blocks';
+
+<Meta title="Components/Button" component={Button} />
+
+# Button
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec euismod, nisl eget consectetur tempor, nisl nunc egestas nisi, euismod aliquam nisl nunc euismod.
+
+## Props
+
+<Props of={Box} />
+
+## Examples
+
+<Preview>
+  <Story name="Default">
+    <Button>Hello</Button>
+  </Story>
+</Preview>
 ```
 
-#### Building and serving the Backend
+This example includes a few helpful Storybook scripts:
 
-##### Environment variables
+- `pnpm dev`: Starts Storybook in dev mode with hot reloading at `localhost:6006`
+- `pnpm build`: Builds the Storybook UI and generates the static HTML files
+- `pnpm preview-storybook`: Starts a local server to view the generated Storybook UI
 
-Copy `.env.sample` to `.env` and modify accordingly.
+## Versioning & Publishing Packages
 
-##### Starting the server and the frontend
+This example uses [Changesets](https://github.com/changesets/changesets) to manage versions, create changelogs, and publish to npm. It's preconfigured so you can start publishing packages immediately.
 
-Build and start the server by running this command (you'll need to stop this
-with `CTRL-C` and rerun this command every time you change the backend code):
+You'll need to create an `NPM_TOKEN` and `GITHUB_TOKEN` and add it to your GitHub repository settings to enable access to npm. It's also worth installing the [Changesets bot](https://github.com/apps/changeset-bot) on your repository.
 
-```console
-cargo run
+### Generating the Changelog
+
+To generate your changelog, run `pnpm changeset` locally:
+
+1. **Which packages would you like to include?** – This shows which packages and changed and which have remained the same. By default, no packages are included. Press `space` to select the packages you want to include in the `changeset`.
+1. **Which packages should have a major bump?** – Press `space` to select the packages you want to bump versions for.
+1. If doing the first major version, confirm you want to release.
+1. Write a summary for the changes.
+1. Confirm the changeset looks as expected.
+1. A new Markdown file will be created in the `changeset` folder with the summary and a list of the packages included.
+
+### Releasing
+
+When you push your code to GitHub, the [GitHub Action](https://github.com/changesets/action) will run the `release` script defined in the root `package.json`:
+
+```bash
+turbo run build --filter=docs^... && changeset publish
 ```
 
-Then start a frontend that uses this backend by running this command in another
-terminal session (the frontend picks up frontend changes using live reload
-without a restart needed, and you can leave the frontend running while you
-restart the server):
+Turborepo runs the `build` script for all publishable packages (excluding docs) and publishes the packages to npm. By default, this example includes `acme` as the npm organization. To change this, do the following:
 
-```console
-pnpm run dev
+- Rename folders in `packages/*` to replace `acme` with your desired scope
+- Search and replace `acme` with your desired scope
+- Re-run `pnpm install`
+
+To publish packages to a private npm organization scope, **remove** the following from each of the `package.json`'s
+
+```diff
+- "publishConfig": {
+-  "access": "public"
+- },
 ```
-
-And then you should be able to visit <http://localhost:4200>!
-
-##### Using Mailgun to Send Emails
-
-Email functionality is anbled to confirm a user's email address. In developing, emails are simulated by a file representing the email
-being created in a local `/tmp/` directory. If using docker, it is in the `/tmp/` directory of the backend container.
-
-```eml
-To: someone@gmail.com
-From: test@localhost
-Subject: Confirm your email address
-Content-Transfer-Encoding: 7bit
-Date: Tue, 11 Feb 2025 17:23:23 -0000
-
-Hello someone! Welcome to Framer University. Please click the
-link below to verify your email address. Thank you!
-
-https://learn.framer.university/continue/RiphVyFo31wuKQhpyTw7RF2LIf
-```
-
-When verifying the email, the prefix may need to be changed to the frontend host e.g. `http://localhost:8080/continue/32i10234u0weth`.
-
-To start sending real emails, set the Mailgun environment variables in `.env` manually.
-
-To set the environment variables manually, create an account and configure Mailgun.
-Use these [quick start instructions](https://documentation.mailgun.com/en/latest/quickstart.html).
-Once you get the environment variables for the app, you will have to add them to the `.env` file.
-You will need to add the following: `MAILGUN_SMTP_LOGIN`, `MAILGUN_SMTP_PASSWORD`, and
-`MAILGUN_SMTP_SERVER` fields.
-
-#### Running the Backend tests
-
-To run the tests, run the following:
-
-```console
-cargo test
-```
-
-## Git Hooks
-
-This project uses a git hook to enforce [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
-To install the git hook, run the following:
-```console
-brew install pre-commit
-pre-commit install -t commit-msg
-```
-
-## Pull Requests
-
-When you submit a pull request, it will automatically be tested on GitHub Actions. In addition to running both the front and backend tests described below, GitHub Actions runs [clippy](https://github.com/rust-lang/rust-clippy) and [rustfmt](https://github.com/rust-lang/rustfmt) on each PR.
-
-To run these tools locally in order to fix issues before submitting, consult each tool's installation instructions and the [.github/workflows/ci.yml](https://github.com/Sakib25800/learn-framer-university/tree/main/.github/workflows/ci.yml).
-
-## Developemnt Flow
-
-```
-Feature Branch -> PR -> Staging -> Main -> Production
-```
-
-Staging deployments occur automatically upon an opened PR against `main`.
-
-Production deployments occur automatically upon merging and pushing to `main`.
