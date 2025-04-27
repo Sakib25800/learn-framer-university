@@ -1,3 +1,53 @@
-.next
+# Dependencies
 node_modules
-shared
+.pnp
+.pnp.js
+
+# Testing
+coverage
+.nyc_output
+
+# Next.js
+.next/
+out/
+next.config.ts
+
+# Production
+build
+dist
+**/storybook-static/**
+**/playwright-report/**
+**/playwright-results/**
+playwright.config.ts
+
+# Rust
+target/
+**/*.rs.bk
+
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Local env files
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+types.ts
+
+# Turbo
+.turbo
+
+# Cache
+.cache
+
+# Cloudflare 
+.open-next
+
+# Wrangler
+.wrangler/

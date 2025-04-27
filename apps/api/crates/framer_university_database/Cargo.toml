@@ -1,0 +1,14 @@
+[package]
+name = "framer_university_database"
+version = "0.1.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[dependencies]
+sqlx = { version = "0.8.5", features = ["runtime-tokio", "tls-rustls", "postgres", "chrono", "uuid"] }
+uuid = { version = "1.16.0", features = ["v4"]}
+chrono = { version= "0.4.40", features = ["serde"] }
+serde = "1.0.219"
+utoipa = {version="5.3.1", features = ["chrono", "uuid"]}

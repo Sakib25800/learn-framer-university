@@ -1,0 +1,27 @@
+{
+    "extends": [
+        "//"
+    ],
+    "tasks": {
+        "build": {
+            "cache": false,
+            "env": [],
+            "passThroughEnv": [],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                "Cargo.toml",
+                "Cargo.lock",
+                "src/**",
+                "crates/**"
+            ],
+            "outputs": [
+                "target/release/api",
+                "target/release/gen_openapi"
+            ]
+        },
+        "lint": {
+            "dependsOn": []
+        },
+        "test": {}
+    }
+}

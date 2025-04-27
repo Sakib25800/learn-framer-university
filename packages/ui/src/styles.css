@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "UniversitySans";
+  src: url("../fonts/university-sans-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "UniversitySans";
+  src: url("../fonts/university-sans-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "UniversitySans";
+  src: url("../fonts/university-sans-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "UniversitySans";
+  src: url("../fonts/university-sans-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@theme {
+  --font-sans: "UniversitySans", system-ui, sans-serif;
+
+  --text-small: 0.75rem;
+  /* 12px */
+  --text-base: 0.8125rem;
+  /* 13px */
+  --text-body: 1rem;
+  /* 16px */
+  --text-body-large: 1.125rem;
+  /* 18px */
+  --text-h3: 1.25rem;
+  /* 20px */
+  --text-h2: 1.5rem;
+  /* 24px */
+  --text-h1: 2.25rem;
+  /* 36px */
+
+  --color-accent: #0080ff;
+
+  --color-primary-50: #050505;
+  --color-primary-100: #0b0c0c;
+  --color-primary-150: #131415;
+  --color-primary-200: #161819;
+  --color-primary-300: #1a1c1d;
+  --color-primary-400: #1e2021;
+  --color-primary-500: #222426;
+  --color-primary-600: #272b2d;
+  --color-primary-700: #272b2d;
+  --color-primary-800: #474d50;
+  --color-primary-900: #51565a;
+  --color-primary-950: #9ba1a5;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-sans);
+  }
+
+  h1 {
+    font-size: var(--text-h1);
+    font-weight: 700;
+    line-height: 1.15em;
+    letter-spacing: -0.03em;
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    font-weight: 700;
+    line-height: 1.25em;
+    letter-spacing: -0.02em;
+  }
+
+  h3 {
+    font-size: var(--text-h3);
+    font-weight: 700;
+    line-height: 1.35em;
+    letter-spacing: -0.01em;
+  }
+
+  .text-body-lg {
+    font-size: var(--text-body-large);
+    line-height: 1.4em;
+    letter-spacing: 0;
+  }
+
+  .text-body {
+    font-size: var(--text-body);
+    line-height: 1.5em;
+    letter-spacing: 0;
+  }
+
+  .text-base {
+    font-size: var(--text-base);
+    line-height: 1.6em;
+    letter-spacing: 0;
+  }
+
+  .text-small {
+    font-size: var(--text-small);
+    line-height: 1.6em;
+    letter-spacing: 0;
+  }
+}

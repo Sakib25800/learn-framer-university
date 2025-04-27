@@ -1,0 +1,51 @@
+on:
+    push:
+        branches: ["main"]
+
+env:
+    # renovate: datasource=npm depName=pnpm
+    PNPM_VERSION: 10.11.0
+    # Turborepo
+    TURBO_API: ${{ vars.TURBO_API }}
+    TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+    TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    TURBO_REMOTE_CACHE_SIGNATURE_KEY: ${{ secrets.TURBO_REMOTE_CACHE_SIGNATURE_KEY }}
+    # Neon
+    DATABASE_URL: ${{ vars.DATABASE_URL }}
+    # Fly
+    FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+    # Cloudflare
+    CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    # Chromatic
+    CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: pnpm/action-setup@v3
+              with:
+                  version: ${{ env.PNPM_VERSION }}
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: "pnpm"
+
+            - uses: dtolnay/rust-toolchain@stable
+              with:
+                  components: clippy, rustfmt
+
+            - name: Cache Rust
+              uses: actions/cache@v4
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      target
+                  key: rust-${{ runner.os }}-${{ hashFiles('**/Cargo.lock') }}
+
+            - run: pnpm install
+            - run: pnpm run ci

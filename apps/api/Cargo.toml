@@ -1,0 +1,154 @@
+[package]
+name = "framer-university"
+version = "0.0.0"
+edition = "2021"
+authors = ["Sakibul Islam <sakibulislam25800@gmail.com>"]
+repository = "https://github.com/sakib25800/framer-university"
+description = "Backend of framer-university"
+default-run = "api"
+
+[workspace]
+members = ["crates/*"]
+
+[package.metadata.cargo-machete]
+ignored = ["log"]
+
+[workspace.metadata.cargo-machete]
+ignored = ["log"]
+
+[workspace.lints.clippy]
+too_many_arguments = "allow"
+
+[lib]
+name = "framer_university"
+
+[[bin]]
+name = "gen_openapi"
+path = "src/bin/gen_openapi.rs"
+
+[lints]
+workspace = true
+
+[profile.staging]
+inherits = "dev"
+opt-level = 2
+debug = true
+debug-assertions = true
+overflow-checks = true
+lto = false
+panic = 'unwind'
+incremental = true
+codegen-units = 256
+rpath = false
+
+[profile.dev.package]
+insta.opt-level = 3
+similar.opt-level = 3
+
+[profile.release]
+opt-level = 2
+
+[dependencies]
+# Web
+axum = { version = "0.8.1", features = ["macros"] }
+axum-extra = { version = "0.10.0", features = ["erased-json", "typed-header"] }
+tower = "0.5.2"
+tower-http = { version = "0.6.2", features = [
+    "add-extension",
+    "fs",
+    "catch-panic",
+    "timeout",
+    "compression-full",
+    "cors",
+] }
+http = "1.2.0"
+
+# Async
+tokio = { version = "1.43.0", features = ["full"] }
+
+# Serde
+serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.137"
+serde_urlencoded = "0.7.1"
+
+# Database
+sqlx = { version = "0.8.5", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "postgres",
+    "chrono",
+    "uuid",
+] }
+
+# Error
+anyhow = "1.0.95"
+thiserror = "2.0.12"
+
+# Logging
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
+log = "0.4"
+json-subscriber = "0.2.4"
+sentry = { version = "0.37.0", features = [
+    "tracing",
+    "tower",
+    "tower-axum-matched-path",
+    "tower-http",
+] }
+
+# Monitoring
+metrics = { version = "0.24.1", default-features = false }
+prometheus = "0.14.0"
+
+# Configuration
+config = "0.15.6"
+dotenvy = "0.15.7"
+env-var = "1"
+
+# Authentication
+jsonwebtoken = "9.3.0"
+
+# OpenAPI
+utoipa = { version = "5.3.1", features = ["chrono", "uuid"] }
+utoipa-axum = "0.2.0"
+utoipa-swagger-ui = { version = "9.0.0", features = ["axum"] }
+
+# Time
+time = { version = "0.3.37", features = ["serde"] }
+# chrono = {version = "0.4.39", features = ["serde"]}
+chrono = "0.4.39"
+
+# Utilities
+validator = { version = "0.20.0", features = ["derive"] }
+uuid = "1.16.0"
+parking_lot = "0.12.3"
+derive_more = { version = "2.0.1", features = ["deref"] }
+rand = "0.9.0"
+colored = "3.0.0"
+
+# Email
+lettre = { version = "0.11.12", default-features = false, features = [
+    "file-transport",
+    "smtp-transport",
+    "hostname",
+    "builder",
+    "tokio1",
+    "tokio1-native-tls",
+] }
+
+# HTTP client
+reqwest = "0.12.12"
+
+# Crates
+framer_university_database = { path = "crates/framer_university_database" }
+
+# Test
+axum-test = "17.3.0"
+regex = "1.11.1"
+insta = { version = "1.42.2", features = ["glob", "json", "redactions"] }
+
+[dev-dependencies]
+bytes = "1.9.0"
+
+[profile.dev.package.sqlx-macros]
+opt-level = 3

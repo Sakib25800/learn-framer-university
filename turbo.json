@@ -1,0 +1,110 @@
+{
+    "$schema": "https://turborepo.com/schema.json",
+    "ui": "tui",
+    "globalPassThroughEnv": [
+        "NODE_ENV"
+    ],
+    "remoteCache": {
+        "signature": true
+    },
+    "tasks": {
+        "ci": {
+            "dependsOn": [
+                "build",
+                "lint",
+                "format:check",
+                "check-types",
+                "test"
+            ],
+            "outputs": []
+        },
+        "build": {
+            "dependsOn": [
+                "^build"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".env*"
+            ],
+            "outputs": [
+                "dist/**",
+                ".next/**",
+                "!.next/cache/**",
+                "target/{debug,release}/**"
+            ]
+        },
+        "generate-openapi": {
+            "outputs": [
+                "packages/api/openapi.json"
+            ],
+            "env": [
+                "RUST_BACKTRACE"
+            ]
+        },
+        "generate-types": {
+            "dependsOn": [
+                "generate-openapi"
+            ],
+            "outputs": [
+                "packages/api/src/types.ts"
+            ]
+        },
+        "dev": {
+            "cache": false,
+            "persistent": true
+        },
+        "deploy": {
+            "dependsOn": [
+                "build",
+                "lint",
+                "format:check",
+                "check-types"
+            ],
+            "inputs": [
+                "$TURBO_DEFAULT$",
+                ".env*"
+            ],
+            "outputs": []
+        },
+        "test": {
+            "dependsOn": []
+        },
+        "e2e": {
+            "dependsOn": [
+                "^build"
+            ],
+            "passThroughEnv": [
+                "PLAYWRIGHT_*"
+            ],
+            "outputs": [
+                "playwright-report",
+                "playwright-results"
+            ]
+        },
+        "e2e:ui": {
+            "dependsOn": [
+                "^build"
+            ],
+            "passThroughEnv": [
+                "PLAYWRIGHT_*"
+            ],
+            "outputs": [
+                "playwright-report",
+                "playwright-results"
+            ]
+        },
+        "lint": {
+            "dependsOn": []
+        },
+        "check-types": {
+            "dependsOn": [
+                "^build"
+            ]
+        },
+        "format": {},
+        "format:check": {},
+        "clean": {
+            "cache": false
+        }
+    }
+}

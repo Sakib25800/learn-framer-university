@@ -1,0 +1,10 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["storybook-static/**"]
+    },
+    "format": {},
+    "format:check": {}
+  }
+}

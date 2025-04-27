@@ -1,0 +1,20 @@
+{
+  "exclude": ["node_modules"],
+  "extends": "@framer-university/typescript-config/nextjs.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "types": ["node"],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "src",
+    "next.config.ts",
+    "next-env.d.ts",
+    ".next/types/**/*.ts",
+    "playwright.config.ts"
+  ]
+}

@@ -1,0 +1,208 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Framer University",
+    "description": "API documentation for [framer-university](https://frameruniversity.com)",
+    "contact": {
+      "name": "Sakibul Islam",
+      "email": "sakibulislam25800@gmail.com"
+    },
+    "license": {
+      "name": ""
+    },
+    "version": "0.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://frameruniversity.com"
+    },
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "Health check.",
+        "operationId": "health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/continue/{token}": {
+      "get": {
+        "tags": ["auth"],
+        "summary": "Verify user's email and complete sign-in process.",
+        "operationId": "continue_signin",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "description": "Token used to verify email",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VerifiedEmailResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/signin": {
+      "post": {
+        "tags": ["auth"],
+        "summary": "Sign in the user and send a sign-in email.",
+        "operationId": "signin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthSignInBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/users/me": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Retrieve a user's profile.",
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticatedUser"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuthSignInBody": {
+        "type": "object",
+        "required": ["email"],
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthenticatedUser": {
+        "type": "object",
+        "required": ["id", "email", "role"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "description": "Email address of the user.",
+            "example": "user@example.com"
+          },
+          "email_verified": {
+            "type": ["string", "null"],
+            "format": "date-time",
+            "description": "Whether the user's email address has been verified.",
+            "example": "2019-12-13T13:46:41Z"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique identifier for the user.",
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          "image": {
+            "type": ["string", "null"],
+            "description": "URL of the user's profile image.",
+            "example": "https://example.com/image.jpg"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole",
+            "description": "Role of the user."
+          }
+        }
+      },
+      "MessageResponse": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A message describing the result of the operation."
+          }
+        }
+      },
+      "UserRole": {
+        "type": "string",
+        "enum": ["User", "Admin"]
+      },
+      "VerifiedEmailResponse": {
+        "type": "object",
+        "required": ["access_token", "refresh_token"],
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "description": "Access token for the user.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          },
+          "refresh_token": {
+            "type": "string",
+            "description": "Refresh token for the user.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
