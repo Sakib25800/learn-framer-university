@@ -1,0 +1,4 @@
+{
+  "extends": "@framer-university/typescript-config/vite.json",
+  "include": ["src"]
+}

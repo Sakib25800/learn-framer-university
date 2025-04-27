@@ -1,0 +1,20 @@
+{
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": [".next/**", "!.next/cache/**"]
+    },
+    "e2e": {
+      "outputs": ["playwright-report", "playwright-results"]
+    },
+    "e2e:ui": {
+      "outputs": ["playwright-report", "playwright-results"]
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    }
+  }
+}

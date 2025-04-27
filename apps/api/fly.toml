@@ -1,0 +1,34 @@
+# fly.toml app configuration file generated for framer-university-api on 2025-05-20T12:57:34+01:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'framer-university-api'
+primary_region = 'lhr'
+
+[build]
+
+[env]
+ALLOWED_ORIGINS = '*.frameruniversity.com,*.frameruniversity.workers.dev'
+APP_URL = 'http://localhost:3000'
+CONNECTION_TIMEOUT_SECONDS = '10'
+EMAIL_VERIFICATION_EXPIRATION_HOURS = '48'
+JWT_ACCESS_TOKEN_EXPIRATION_HOURS = '24'
+JWT_REFRESH_TOKEN_EXPIRATION_DAYS = '7'
+MAILGUN_SMTP_SERVER = 'smtp.mailgun.org'
+POOL_SIZE = '3'
+PORT = '8080'
+SENTRY_ENV_API = 'local'
+
+[http_service]
+internal_port = 8080
+force_https = true
+auto_stop_machines = 'stop'
+auto_start_machines = true
+min_machines_running = 0
+processes = ['app']
+
+[[vm]]
+memory = '1gb'
+cpu_kind = 'shared'
+cpus = 1

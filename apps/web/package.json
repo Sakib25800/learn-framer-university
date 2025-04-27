@@ -1,0 +1,47 @@
+{
+  "name": "web",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev -p 3000",
+    "lint": "next lint",
+    "check-types": "tsc --noEmit",
+    "start": "next start",
+    "e2e": "playwright test",
+    "e2e:ui": "playwright test --ui",
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "analyze": "ANALYZE=true next build",
+    "clean": "rm -rf .next .turbo"
+  },
+  "dependencies": {
+    "@framer-university/ui": "workspace:*",
+    "@framer-university/api": "workspace:*",
+    "@opennextjs/cloudflare": "1.0.0-beta.4",
+    "@tanstack/react-query": "5.74.4",
+    "@tanstack/react-query-devtools": "5.74.4",
+    "next": "^15.3.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "@types/react": "19.1.4",
+    "@types/react-dom": "19.1.5"
+  },
+  "devDependencies": {
+    "@framer-university/eslint-config": "workspace:*",
+    "@framer-university/typescript-config": "workspace:*",
+    "@next/bundle-analyzer": "^15.3.0",
+    "@next/eslint-plugin-next": "^15.3.0",
+    "@playwright/test": "^1.51.1",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.15.19",
+    "eslint": "^9.25.0",
+    "tailwindcss": "^4.1.4",
+    "typescript": "5.8.2",
+    "wrangler": "^4.16.0"
+  }
+}

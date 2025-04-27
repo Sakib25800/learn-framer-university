@@ -1,5 +1,5 @@
 {
-  "name": "@repo/ui",
+  "name": "@framer-university/ui",
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
@@ -8,53 +8,55 @@
     "dist/**",
     "dist"
   ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
   "exports": {
-    "./counter-button": {
-      "import": {
-        "types": "./dist/es/counter-button.d.mts",
-        "default": "./dist/es/counter-button.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/counter-button.d.ts",
-        "default": "./dist/cjs/counter-button.js"
-      }
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
     },
-    "./link": {
-      "import": {
-        "types": "./dist/es/link.d.mts",
-        "default": "./dist/es/link.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/link.d.ts",
-        "default": "./dist/cjs/link.js"
-      }
-    }
+    "./theme.css": "./src/styles.css",
+    "./styles.css": "./dist/styles.css",
+    "./postcss.config": "./postcss.config.mjs"
   },
   "scripts": {
-    "build": "bunchee",
-    "dev": "bunchee --watch",
+    "build": "tsup src/index.ts --format esm,cjs --dts --out-dir dist",
+    "clean": "rm -rf dist",
+    "dev": "pnpm tailwindcss -i ./src/styles.css -o ./dist/styles.css --watch",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src/",
-    "test": "jest"
+    "lint": "eslint src/ --max-warnings 0",
+    "test": "jest",
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore"
   },
   "jest": {
-    "preset": "@repo/jest-presets/browser"
+    "preset": "@framer-university/jest-presets/browser"
+  },
+  "dependencies": {
+    "tailwind-merge": "^3.2.0",
+    "class-variance-authority": "^0.7.1"
   },
   "devDependencies": {
     "@jest/globals": "^29.7.0",
-    "@repo/eslint-config": "workspace:*",
-    "@repo/jest-presets": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@framer-university/eslint-config": "workspace:*",
+    "@framer-university/jest-presets": "workspace:*",
+    "@framer-university/typescript-config": "workspace:*",
+    "@swc/helpers": "^0.5.0",
     "@types/node": "^22.14.0",
     "bunchee": "^6.4.0",
     "eslint": "^9.25.0",
     "jest": "^29.7.0",
-    "typescript": "5.8.2"
+    "tailwindcss": "^4.1.4",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/cli": "^4.1.4",
+    "concurrently": "^8.2.2",
+    "tsup": "^7.2.0"
   },
   "peerDependencies": {
-    "@types/react": ">=18",
-    "@types/react-dom": ">=18",
-    "react": ">=18",
-    "react-dom": ">=18"
+    "motion": ">=12.9.2",
+    "@types/react": ">=19.1.4",
+    "@types/react-dom": ">=19.1.5",
+    "react": ">=19.1.0",
+    "react-dom": ">=19.1.0"
   }
 }

@@ -1,0 +1,51 @@
+{
+  "name": "@framer-university/api",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "files": [
+    "dist",
+    "openapi.json"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "lint": "eslint \"src/**/*.ts*\"",
+    "clean": "rm -rf .turbo node_modules dist",
+    "format": "prettier --write . --ignore-path ../../.gitignore",
+    "format:check": "prettier --check . --ignore-path ../../.gitignore",
+    "typecheck": "tsc --noEmit",
+    "build:with-server": "pnpm install && pnpm tsup",
+    "generate-types": "openapi-typescript openapi.json -o src/types.ts",
+    "prebuild": "pnpm generate-types"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.74.4",
+    "openapi-fetch": "0.14.0",
+    "openapi-react-query": "0.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@framer-university/eslint-config": "workspace:*",
+    "@framer-university/typescript-config": "workspace:*",
+    "@types/node": "^20.11.24",
+    "@types/react": "19.1.4",
+    "@types/react-dom": "19.1.5",
+    "bunchee": "^6.4.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "tsup": "^8.0.2",
+    "typescript": "^5.3.3",
+    "openapi-typescript": "^7.0.0"
+  }
+}

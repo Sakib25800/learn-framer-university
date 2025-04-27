@@ -1,10 +1,21 @@
 {
-  "extends": "@repo/typescript-config/react-library.json",
+  "extends": "@framer-university/typescript-config/react-library.json",
   "compilerOptions": {
-    "lib": ["dom", "ES2015"],
+    "lib": ["dom", "ESNext"],
     "sourceMap": true,
-    "types": ["jest", "node"]
+    "types": ["jest", "node"],
+    "declaration": true,
+    "declarationDir": "dist",
+    "emitDeclarationOnly": false,
+    "outDir": "dist",
+    "module": "ESNext",
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "jsx": "react-jsx",
+    "strict": true
   },
-  "include": ["."],
+  "include": ["src"],
   "exclude": ["dist", "build", "node_modules"]
 }

@@ -1,40 +1,93 @@
-# Turborepo kitchen sink starter
+<div align="center">
+  <img src="assets/readme-logo-light.png" alt="Framer University Logo" width="150"/>
+</div>
 
-This Turborepo starter is maintained by the Turborepo core team.
+# Framer University
 
-This example also shows how to use [Workspace Configurations](https://turborepo.com/docs/core-concepts/monorepos/configuring-workspaces).
+<div align="center">
+  <p>Learn everything there is to know about Framer</p>
+</div>
 
-## Using this example
+<div align="center">
+  <a href="#overview">Overview</a> •
+  <a href="#documentation">Documentation</a> •
+  <a href="#getting-started">Getting Started</a> •
+  <a href="#deployment">Deployment</a>
+</div>
 
-Run the following command:
+## Project Structure
 
-```sh
-npx create-turbo@latest -e kitchen-sink
+The project is organized as a monorepo using Turborepo:
+
+```
+.
+├── apps/
+│   ├── web/                # Main Next.js web platform
+│   ├── admin/              # Vite-based admin dashboard
+│   ├── plugin/             # Framer plugin
+│   └── api/                # Rust/Axum backend service
+├── packages/               # Shared packages
+│   ├── api/                # Shared API types
+│   ├── ui/                 # Shared UI components
+│   ├── config-typescript/   # TypeScript config
+│   ├── config-eslint/       # ESLint config
+│   └── jest-presets/       # Jest config
+├── docs/                   # Documentation
+└── turbo.json              # Turborepo configuration
 ```
 
-## What's inside?
+## Documentation
 
-This Turborepo includes the following packages and apps:
+- Apps:
+  - [Web](./apps/web/README.md)
+  - [Admin](./apps/admin/README.md)
+  - [Plugin](./apps/plugin/README.md)
+  - [API](./apps/api/README.md)
 
-### Apps and Packages
+- Packages:
+  - [API](./packages/api/README.md)
+  - [UI](./packages/ui/README.md)
+  - [TypeScript Config](./packages/config-typescript/README.md)
+  - [ESLint Config](./packages/config-eslint/README.md)
+  - [Jest Presets](./packages/jest-presets/README.md)
 
-- `api`: an [Express](https://expressjs.com/) server
-- `storefront`: a [Next.js](https://nextjs.org/) app
-- `admin`: a [Vite](https://vitejs.dev/) single page app
-- `blog`: a [Remix](https://remix.run/) blog
-- `@repo/eslint-config`: ESLint configurations used throughout the monorepo
-- `@repo/jest-presets`: Jest configurations
-- `@repo/logger`: isomorphic logger (a small wrapper around console.log)
-- `@repo/ui`: a dummy React UI library (which contains `<CounterButton>` and `<Link>` components)
-- `@repo/typescript-config`: tsconfig.json's used throughout the monorepo
+## Getting Started
 
-Each package and app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Prerequisites
 
-### Utilities
+- [Node.js 18+](https://nodejs.org/en/download/)
+- [pnpm 8+](https://pnpm.io/installation)
+- [Turborepo](https://turbo.build/repo/docs/installing)
+- [Rust 1.70+](https://www.rust-lang.org/tools/install) (for API development)
 
-This Turborepo has some additional tools already setup for you:
+### Quick Start
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Jest](https://jestjs.io) test runner for all things JavaScript
-- [Prettier](https://prettier.io) for code formatting
+```bash
+# Install dependencies
+pnpm install
+
+# Start all apps
+turbo dev
+
+# Start specific app
+turbo dev --filter web
+turbo dev --filter admin
+turbo dev --filter plugin
+turbo dev --filter api
+
+# Run tests
+turbo test
+
+turbo e2e
+
+# Lint code
+turbo lint
+```
+
+## Infrastructure
+
+- [Neon](https://neon.tech) - Serverless Postgres 
+- [Loops](https://loops.so) - Email service provider
+- [Cloudflare](https://cloudflare.com) - Pages + Workers + R2 + D1 
+- [Fly.io](https://fly.io) - Backend hosting 
+

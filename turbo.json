@@ -1,32 +1,99 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "ui": "tui",
+  "globalPassThroughEnv": [
+    "NODE_ENV"
+  ],
   "tasks": {
     "build": {
-      "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
       "outputs": [
-        "build/**",
-        ".vercel/**",
         "dist/**",
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        "target/{debug,release}/**"
       ]
     },
-    "test": {
-      "outputs": ["coverage/**"],
-      "dependsOn": []
+    "generate-openapi": {
+      "cache": false,
+      "outputs": [
+        "packages/api/openapi.json"
+      ],
+      "env": [
+        "RUST_BACKTRACE"
+      ]
     },
-    "lint": {
-      "dependsOn": ["^build", "^lint"]
-    },
-    "check-types": {
-      "dependsOn": ["^build", "^check-types"]
+    "generate-types": {
+      "dependsOn": [
+        "generate-openapi"
+      ],
+      "cache": false,
+      "outputs": [
+        "packages/api/src/types.ts"
+      ]
     },
     "dev": {
-      "dependsOn": ["^build"],
       "cache": false,
       "persistent": true
+    },
+    "deploy": {
+      "dependsOn": [
+        "build",
+        "lint",
+        "format:check",
+        "check-types"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*"
+      ],
+      "outputs": []
+    },
+    "test": {
+      "outputs": [
+        "coverage/**",
+        "packages/*/coverage/**",
+        "packages/*/test-results/**",
+        "packages/*/.jest-cache/**"
+      ],
+      "dependsOn": []
+    },
+    "e2e": {
+      "dependsOn": [
+        "^build"
+      ],
+      "passThroughEnv": [
+        "PLAYWRIGHT_*"
+      ]
+    },
+    "e2e:ui": {
+      "dependsOn": [
+        "^build"
+      ],
+      "passThroughEnv": [
+        "PLAYWRIGHT_*"
+      ]
+    },
+    "lint": {
+      "dependsOn": []
+    },
+    "check-types": {
+      "dependsOn": []
+    },
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "cache": false
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

@@ -2,8 +2,12 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "env": ["PORT"],
-      "outputs": ["dist/**"]
+      "cache": false,
+      "env": ["NODE_ENV"]
+    },
+    "lint": {
+      "cache": false,
+      "dependsOn": []
     }
   }
 }

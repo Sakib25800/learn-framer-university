@@ -1,0 +1,49 @@
+{
+  "name": "storybook",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "storybook dev -p 6006 --no-open",
+    "build-storybook": "storybook build",
+    "lint": "eslint . --max-warnings 0",
+    "preview": "vite preview",
+    "storybook": "storybook dev -p 6006 --no-open",
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore"
+  },
+  "dependencies": {
+    "@framer-university/ui": "workspace:*",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@chromatic-com/storybook": "^3",
+    "@eslint/js": "^9.22.0",
+    "@framer-university/eslint-config": "workspace:*",
+    "@framer-university/typescript-config": "workspace:*",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/react": "^8.6.12",
+    "@storybook/react-vite": "^8.6.12",
+    "@storybook/test": "^8.6.12",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@vitejs/plugin-react": "^4.3.4",
+    "chromatic": "^11.28.2",
+    "eslint": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19",
+    "eslint-plugin-storybook": "^0.12.0",
+    "globals": "^16.0.0",
+    "storybook": "^8.6.12",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.26.1",
+    "vite": "^6.3.4"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
+  }
+}

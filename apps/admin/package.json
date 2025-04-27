@@ -5,23 +5,34 @@
   "private": true,
   "scripts": {
     "build": "vite build",
-    "dev": "vite --host 0.0.0.0 --port 3001 --clearScreen false",
+    "dev": "vite --host 0.0.0.0 --port 3003 --clearScreen false",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src/ --max-warnings 0"
+    "lint": "eslint src/ --max-warnings 0",
+    "format": "prettier --write \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check \"./**/*.{js,jsx,ts,tsx,md,json,html}\" --ignore-path ../../.prettierignore",
+    "deploy": "wrangler deploy",
+    "preview": "wrangler preview",
+    "clean": "rm -rf dist .turbo"
   },
   "dependencies": {
-    "@repo/ui": "workspace:*",
+    "@framer-university/ui": "workspace:*",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
+    "@framer-university/eslint-config": "workspace:*",
+    "@framer-university/typescript-config": "workspace:*",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@tailwindcss/vite": "^4.1.5",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.4.1",
+    "@cloudflare/vite-plugin": "^1.0.0",
+    "api": "workspace:*",
     "eslint": "^9.25.0",
+    "tailwindcss": "^4.1.4",
     "typescript": "5.8.2",
-    "vite": "^5.4.14"
+    "vite": "^6.3.4",
+    "wrangler": "^4.16.0"
   }
 }
