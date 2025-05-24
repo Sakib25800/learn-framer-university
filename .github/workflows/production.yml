@@ -38,10 +38,13 @@ jobs:
               with:
                   toolchain: 1.85.0
                   components: clippy, rustfmt
+                  cache-workspaces: apps/api
 
-            - run: cargo install sqlx-cli@0.8.5 --locked --no-default-features --features native-tls,postgres
-            - run: cargo sqlx database create && sqlx migrate run
-            - run: cargo sqlx prepare --check -- --all-targets
+            - run: |
+                  cd apps/api
+                  cargo install sqlx-cli@0.8.5 --locked --no-default-features --features native-tls,postgres
+                  cargo sqlx database create && sqlx migrate run
+                  cargo sqlx prepare --check -- --all-targets
 
             - run: pnpm install
             - run: cd apps/web && pnpm playwright install chromium
