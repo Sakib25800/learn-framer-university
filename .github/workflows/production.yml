@@ -3,6 +3,7 @@ on:
         branches: ["main"]
 
 env:
+    CARGO_TERM_COLORS: always
     # renovate: datasource=npm depName=pnpm
     PNPM_VERSION: 10.11.0
     # Turborepo
