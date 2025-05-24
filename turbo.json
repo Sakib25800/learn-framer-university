@@ -14,7 +14,8 @@
                 "lint",
                 "format:check",
                 "check-types",
-                "test"
+                "test",
+                "e2e"
             ],
             "outputs": []
         },
