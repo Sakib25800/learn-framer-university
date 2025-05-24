@@ -22,6 +22,8 @@ env:
 jobs:
     ci:
         runs-on: ubuntu-latest
+        env:
+            DATABASE_URL: ${{ vars.DATABASE_URL }}
         steps:
             - uses: actions/checkout@v4
 
