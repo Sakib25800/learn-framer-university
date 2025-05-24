@@ -54,29 +54,21 @@ jobs:
                   cache: "pnpm"
 
             - run: pnpm install
+            - run: pnpm build
 
-            - uses: superfly/flyctl-actions/setup-flyctl@master
-
-            - name: Deploy API to Fly.io
-              run: |
-                  cd apps/api
-                  flyctl deploy
-              env:
-                  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-
-            - name: Deploy web to Cloudflare Workers
+            - name: Deploy web to Cloudflare
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   workingDirectory: "apps/web"
 
-            - name: Deploy admin to Cloudflare Workers
+            - name: Deploy admin to Cloudflare
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
                   workingDirectory: "apps/admin"
 
-            - name: Deploy plugin to Cloudflare Workers
+            - name: Deploy plugin to Cloudflare
               uses: cloudflare/wrangler-action@v3
               with:
                   apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -88,3 +80,11 @@ jobs:
                   projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
                   workingDir: apps/storybook
                   exitOnceUploaded: true
+
+            - uses: superfly/flyctl-actions/setup-flyctl@master
+            - name: Deploy API to Fly
+              run: |
+                  cd apps/api
+                  flyctl deploy
+              env:
+                  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
